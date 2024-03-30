@@ -2,19 +2,18 @@
 from domain.model import Deck, AbstractClassificationRule, Classifier, DeckName
 
 
+def deck_contains_at_least_three(deck: Deck, card_name: str) -> bool:
+    return any([card.name == card_name and card.quantity >= 3 for card in deck.main])
+
+
 class RakdosVampires(AbstractClassificationRule):
     @property
     def deck_name(self) -> DeckName:
         return DeckName('Rakdos Vampires')
 
     def satisfied_by(self, deck: Deck):
-        contains_sorin, contains_ripper = False, False
-        for card in deck.main:
-            if card.name == 'Vein Ripper' and card.quantity >= 3:
-                contains_ripper = True
-            if card.name == 'Sorin, Imperious Bloodlord' and card.quantity >= 3:
-                contains_sorin = True
-        return contains_ripper and contains_sorin
+        return (deck.contains_at_least_three('Vein Ripper') and
+                deck.contains_at_least_three('Sorin, Imperious Bloodlord'))
 
 
 class IzzetPhoenix(AbstractClassificationRule):
@@ -23,8 +22,18 @@ class IzzetPhoenix(AbstractClassificationRule):
         return DeckName('Izzet Phoenix')
 
     def satisfied_by(self, deck: Deck):
-        return any([card.name == 'Arclight Phoenix' and card.quantity >= 3 for card in deck.main])
+        return deck.contains_at_least_three('Arclight Phoenix')
+
+
+class AmaliaCombo(AbstractClassificationRule):
+    @property
+    def deck_name(self) -> DeckName:
+        return DeckName('Amalia Combo')
+
+    def satisfied_by(self, deck: Deck):
+        return (deck.contains_at_least_three('Amalia Benavides Aguirre') and
+                deck.contains_at_least_three('Wildgrowth Walker'))
 
 
 def universal_classifier() -> Classifier:
-    return Classifier([RakdosVampires(), IzzetPhoenix()])
+    return Classifier([RakdosVampires(), IzzetPhoenix(), AmaliaCombo()])

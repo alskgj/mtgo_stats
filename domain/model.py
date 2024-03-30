@@ -7,7 +7,7 @@
 
 
 """
-
+from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel
@@ -53,6 +53,9 @@ class Deck(BaseModel):
     main: List[Card] = []
     side: List[Card] = []
 
+    def contains_at_least_three(self, card_name):
+        return any([card.name == card_name and card.quantity >= 3 for card in self.main+self.side])
+
 
 class TournamentParticipant(BaseModel):
     name: str
@@ -70,8 +73,9 @@ class Tournament(BaseModel):
     description: str
     format: str
     players: List[TournamentParticipant]
+    start_time: datetime
 
-    def _classify(self, classifier: 'Classifier') -> Dict[DeckName, List[TournamentParticipant]]:
+    def deckname_to_players(self, classifier: 'Classifier') -> Dict[DeckName, List[TournamentParticipant]]:
         decks: Dict[DeckName, List[TournamentParticipant]] = {}
         for player in self.players:
             deck_name = classifier.classify(player.deck)
@@ -80,17 +84,8 @@ class Tournament(BaseModel):
             decks[deck_name].append(player)
         return decks
 
-    def win_rates(self, classifier: 'Classifier') -> Dict[str, float]:
-        decks = self._classify(classifier)
-        result = {}
-        for deck_name in decks:
-            total_wins = sum(p.wins for p in decks[deck_name])
-            total_games = sum(p.wins + p.losses for p in decks[deck_name])
-            result[deck_name] = round(total_wins / total_games * 100, 2)
-        return result
-
     def play_rates(self, classifier: 'Classifier') -> Dict[str, float]:
-        decks = self._classify(classifier)
+        decks = self.deckname_to_players(classifier)
         result = {}
         for deck_name in decks:
             total_decks = len(self.players)
