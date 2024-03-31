@@ -14,10 +14,9 @@ if __name__ == '__main__':
     repo = MongoRepository(get_mongo_db())
     cache_tournaments(api, repo)
 
-    tournaments = list(repo.get_tournament_ids())[:5]
+    tournaments = list(repo.get_tournament_ids())
     all_tournaments = [repo.get(t) for t in tournaments]
 
     th = TournamentHandler(all_tournaments, rules.universal_classifier())
-    print('play rates', th.play_rates())
-    print('win rates', th.win_rates())
     th.find_unclassified_decks()
+    th.show_stats(max_days=10)

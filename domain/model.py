@@ -68,6 +68,10 @@ class Deck(BaseModel):
     def contains_at_least(self, x: int, card_name: str):
         return any([card.name == card_name and card.quantity >= x for card in self.main + self.side])
 
+    @property
+    def maindeck_creatures(self) -> int:
+        return sum(card.quantity for card in self.main if card.type == CardType.creature)
+
     def __str__(self):
         creatures = [card for card in self.main if card.type == CardType.creature]
         spells = [card for card in self.main if card.type in (CardType.instant, CardType.sorcery)]
@@ -80,6 +84,7 @@ class Deck(BaseModel):
             result += f'{title}\n{len(title)*"="}\n'
             for card in cat:
                 result += f'{card}\n'
+            result += '\n'
         return result
 
 

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List
 
 from domain.model import Tournament, Classifier, TournamentParticipant, DeckName
-from pprint import pprint
+
 
 class TournamentHandler:
     def __init__(self, tournaments: List[Tournament], classifier: Classifier):
@@ -45,3 +45,17 @@ class TournamentHandler:
                 if self.classifier.classify(player.deck) is None:
                     print(f'Unknown deck from {player.name} at: {tournament.link}')
                     print(player.deck)
+
+    def show_stats(self, max_days=14):
+        win_rates = self.win_rates(max_days)
+        play_rates = self.play_rates(max_days)
+        combined = [{'name': deck, 'wr': win_rates[deck], 'pr': play_rates[deck]} for deck in win_rates]
+        combined = sorted(combined, key=lambda deck: deck['pr'], reverse=True)
+
+        title = f'{"Deck Name":<28}{"Play Rate":<15}{"Win Rate":<15}'
+        print(title)
+        print('='*len(title))
+        for i, deck in enumerate(combined):
+            if deck['name'] is None:
+                deck['name'] = 'Not Classified'
+            print(f'{i+1:<3}{deck["name"]:<25}{deck["pr"]:<15}{deck["wr"]:<15}')
