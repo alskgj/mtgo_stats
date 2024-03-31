@@ -23,6 +23,7 @@ class Color(str, Enum):
     red = 'red'
     green = 'green'
     colorless = 'colorless'
+    unknown = 'unknown'
 
 
 class Rarity(str, Enum):
@@ -30,6 +31,9 @@ class Rarity(str, Enum):
     uncommon = 'uncommon'
     rare = 'rare'
     mythic = 'mythic'
+    promo = 'promo'
+    basic_land = 'basic_land'
+    bonus = 'bonus'
 
 
 class CardType(str, Enum):
@@ -37,16 +41,21 @@ class CardType(str, Enum):
     sorcery = 'sorcery'
     instant = 'instant'
     land = 'land'
+    enchantment = 'enchantment'
+    planeswalker = 'planeswalker'
+    artifact = 'artifact'
+    unknown = 'unknown'
 
 
 class Card(BaseModel):
     name: str
     cost: int
-    id: int
-    rarity: Rarity
     colors: List[Color]
     type: CardType
     quantity: int
+
+    def __str__(self):
+        return f'{self.quantity} {self.name}'
 
 
 class Deck(BaseModel):
@@ -55,6 +64,23 @@ class Deck(BaseModel):
 
     def contains_at_least_three(self, card_name):
         return any([card.name == card_name and card.quantity >= 3 for card in self.main+self.side])
+
+    def contains_at_least(self, x: int, card_name: str):
+        return any([card.name == card_name and card.quantity >= x for card in self.main + self.side])
+
+    def __str__(self):
+        creatures = [card for card in self.main if card.type == CardType.creature]
+        spells = [card for card in self.main if card.type in (CardType.instant, CardType.sorcery)]
+        lands = [card for card in self.main if card.type == CardType.land]
+        others = [card for card in self.main if card not in creatures+spells+lands]
+
+        result = ""
+        grouping = [('Creatures', creatures), ('Spells', spells), ('Lands', lands), ('Other', others)]
+        for title, cat in grouping:
+            result += f'{title}\n{len(title)*"="}\n'
+            for card in cat:
+                result += f'{card}\n'
+        return result
 
 
 class TournamentParticipant(BaseModel):
@@ -74,6 +100,7 @@ class Tournament(BaseModel):
     format: str
     players: List[TournamentParticipant]
     start_time: datetime
+    link: str
 
     def deckname_to_players(self, classifier: 'Classifier') -> Dict[DeckName, List[TournamentParticipant]]:
         decks: Dict[DeckName, List[TournamentParticipant]] = {}

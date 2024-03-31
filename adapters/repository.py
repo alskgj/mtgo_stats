@@ -40,24 +40,7 @@ class MongoRepository(AbstractRepository):
         result = self.tournaments.aggregate(only_link_field_query)
         return set(r['link'] for r in result)
 
-
-
-# from pymongo import MongoClient
-#
-# client = MongoClient('mongodb://localhost:27017')
-#
-# print(client.list_database_names())
-
-
-
-
-
-class AbstractAPI(abc.ABC):
-
-    @abc.abstractmethod
-    def list_tournament_links(self) -> List[str]:
-        ...
-
-    @abc.abstractmethod
-    def fetch_tournament(self, tournament_link: str) -> model.Tournament:
-        ...
+    def get_tournament_ids(self) -> Set[int]:
+        only_link_field_query = [{'$project': {'id': 1}}]
+        result = self.tournaments.aggregate(only_link_field_query)
+        return set(r['id'] for r in result)

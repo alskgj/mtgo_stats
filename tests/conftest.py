@@ -2,7 +2,8 @@ from datetime import datetime
 
 import pytest
 
-from domain.model import Deck, Card, Rarity, Color, CardType, Tournament, TournamentParticipant
+from domain import rules
+from domain.model import Deck, Card, Rarity, Color, CardType, Tournament, TournamentParticipant, Classifier
 
 
 @pytest.fixture
@@ -78,7 +79,8 @@ def phoenix_tournament(izzet_phoenix) -> Tournament:
             TournamentParticipant(name='p1', rank=1, wins=3, losses=0, deck=izzet_phoenix),
             TournamentParticipant(name='p1', rank=2, wins=0, losses=3, deck=izzet_phoenix),
         ],
-        start_time=datetime.fromisoformat('2024-03-30 10:00:00')
+        start_time=datetime.fromisoformat('2024-03-30 10:00:00'),
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
     )
 
 
@@ -93,7 +95,8 @@ def small_tournament(izzet_phoenix, rakdos_vampires) -> Tournament:
             TournamentParticipant(name='p1', rank=1, wins=3, losses=0, deck=izzet_phoenix),
             TournamentParticipant(name='p2', rank=3, wins=0, losses=3, deck=rakdos_vampires),
         ],
-        start_time=datetime.fromisoformat('2024-03-29 10:00:00')
+        start_time=datetime.fromisoformat('2024-03-29 10:00:00'),
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
     )
 
 
@@ -108,7 +111,8 @@ def old_small_tournament(izzet_phoenix, rakdos_vampires) -> Tournament:
             TournamentParticipant(name='p1', rank=1, wins=3, losses=0, deck=izzet_phoenix),
             TournamentParticipant(name='p2', rank=3, wins=0, losses=3, deck=rakdos_vampires),
         ],
-        start_time=datetime.fromisoformat('1700-03-29 10:00:00')
+        start_time=datetime.fromisoformat('1700-03-29 10:00:00'),
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
     )
 
 
@@ -125,5 +129,11 @@ def medium_tournament(izzet_phoenix, rakdos_vampires, amalia_combo) -> Tournamen
             TournamentParticipant(name='p4', rank=4, wins=1, losses=2, deck=amalia_combo),
             TournamentParticipant(name='p5', rank=5, wins=0, losses=3, deck=rakdos_vampires),
         ],
-        start_time=datetime.fromisoformat('2023-03-30 10:00:00')
+        start_time=datetime.fromisoformat('2023-03-30 10:00:00'),
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
     )
+
+
+@pytest.fixture
+def classifier() -> Classifier:
+    return rules.universal_classifier()

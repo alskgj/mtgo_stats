@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List
 
 from domain.model import Tournament, Classifier, TournamentParticipant, DeckName
-
+from pprint import pprint
 
 class TournamentHandler:
     def __init__(self, tournaments: List[Tournament], classifier: Classifier):
@@ -38,3 +38,10 @@ class TournamentHandler:
         for deck_name in decks:
             result[deck_name] = round(len(decks[deck_name])/total_decks*100, 2)
         return result
+
+    def find_unclassified_decks(self):
+        for tournament in self.tournaments:
+            for player in tournament.players:
+                if self.classifier.classify(player.deck) is None:
+                    print(f'Unknown deck from {player.name} at: {tournament.link}')
+                    print(player.deck)

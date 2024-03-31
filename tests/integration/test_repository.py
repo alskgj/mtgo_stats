@@ -2,7 +2,8 @@ from typing import List
 
 import pytest
 
-from adapters.repository import AbstractAPI, MongoRepository
+from adapters.repository import MongoRepository
+from adapters.mtgo_api import AbstractAPI
 from domain import model
 from service_layer.services import cache_tournaments
 from tests.conftest import small_tournament
@@ -47,7 +48,8 @@ def test_list_cached_tournaments(small_tournament, repo):
 def test_retrieving_tournaments(small_tournament, repo):
     # arrange
     api = FakeAPI()
-    api.register_tournament('www.mtgo.com/tournaments/1', small_tournament)
+    link = 'https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+    api.register_tournament(link, small_tournament)
 
     # act
     cache_tournaments(api, repo)
