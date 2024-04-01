@@ -26,13 +26,13 @@ class MtgoAPI(AbstractAPI):
     base_url = 'https://www.mtgo.com'
 
     def list_tournament_links(self) -> List[str]:
+        # todo - handle months? to get all march deck lists fetch https://www.mtgo.com/decklists/2024/03
         data = requests.get(self.base_url+'/decklists').text
         soup = BeautifulSoup(data, features='html.parser')
         links = [decklist.get('href') for decklist in soup.find_all(class_='decklists-link')]
         tournaments = [self.base_url + l for l in links if 'pioneer' in l and 'league' not in l]
         logging.info(f'Found {len(tournaments)} pioneer tournaments.')
         return tournaments
-
 
     def fetch_tournament(self, tournament_link: str) -> model.Tournament:
         logging.info(f'Fetching new tournament: {tournament_link}.')

@@ -12,8 +12,6 @@ def rakdos_vampires() -> Deck:
         Card(
             name='Vein Ripper',
             cost=6,
-            id=1,
-            rarity=Rarity.rare,
             colors=[Color.black],
             type=CardType.creature,
             quantity=4
@@ -21,8 +19,6 @@ def rakdos_vampires() -> Deck:
         Card(
             name='Sorin, Imperious Bloodlord',
             cost=3,
-            id=2,
-            rarity=Rarity.mythic,
             colors=[Color.black],
             type=CardType.creature,
             quantity=4
@@ -36,8 +32,13 @@ def izzet_phoenix() -> Deck:
         Card(
             name='Arclight Phoenix',
             cost=4,
-            id=3,
-            rarity=Rarity.rare,
+            colors=[Color.red],
+            type=CardType.creature,
+            quantity=4
+        ),
+        Card(
+            name='Lightning Axe',
+            cost=4,
             colors=[Color.red],
             type=CardType.creature,
             quantity=4
@@ -51,8 +52,6 @@ def amalia_combo() -> Deck:
         Card(
             name='Amalia Benavides Aguirre',
             cost=3,
-            id=4,
-            rarity=Rarity.rare,
             colors=[Color.white, Color.black],
             type=CardType.creature,
             quantity=4
@@ -60,8 +59,6 @@ def amalia_combo() -> Deck:
         Card(
             name='Wildgrowth Walker',
             cost=2,
-            id=5,
-            rarity=Rarity.uncommon,
             colors=[Color.green],
             type=CardType.creature,
             quantity=4

@@ -7,44 +7,6 @@ def deck_contains_at_least_three(deck: Deck, card_name: str) -> bool:
     return any([card.name == card_name and card.quantity >= 3 for card in deck.main])
 
 
-class RakdosVampires(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Rakdos Vampires')
-
-    def satisfied_by(self, deck: Deck):
-        return (deck.contains_at_least_three('Vein Ripper') and
-                deck.contains_at_least_three('Sorin, Imperious Bloodlord'))
-
-
-class IzzetPhoenix(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Izzet Phoenix')
-
-    def satisfied_by(self, deck: Deck):
-        return deck.contains_at_least_three('Arclight Phoenix')
-
-
-class AmaliaCombo(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Amalia Combo')
-
-    def satisfied_by(self, deck: Deck):
-        return (deck.contains_at_least_three('Amalia Benavides Aguirre') and
-                deck.contains_at_least_three('Wildgrowth Walker'))
-
-
-class WasteNot(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Waste Not')
-
-    def satisfied_by(self, deck: Deck):
-        return deck.contains_at_least_three('Waste Not')
-
-
 class RedAggro(AbstractClassificationRule):
     @property
     def deck_name(self) -> DeckName:
@@ -53,16 +15,6 @@ class RedAggro(AbstractClassificationRule):
     def satisfied_by(self, deck: Deck):
         return (deck.contains_at_least_three('Monastery Swiftspear') and
                 deck.contains_at_least(2, 'Kumano Faces Kakkazan'))
-
-
-class Spirits(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Spirits')
-
-    def satisfied_by(self, deck: Deck):
-        return (deck.contains_at_least_three('Supreme Phantom') and
-                deck.contains_at_least_three('Mausoleum Wanderer'))
 
 
 class UWControl(AbstractClassificationRule):
@@ -201,12 +153,13 @@ class SimpleRule(AbstractClassificationRule):
 
 def universal_classifier() -> Classifier:
     return Classifier([
-        RakdosVampires(),
-        IzzetPhoenix(),
-        AmaliaCombo(),
-        WasteNot(),
         RedAggro(),
-        Spirits(),
+        SimpleRule('Rakdos Vampires', ['Vein Ripper', 'Sorin, Imperious Bloodlord']),
+        SimpleRule('Izzet Phoenix', ['Arclight Phoenix', 'Lightning Axe']),
+        SimpleRule('Grixis Phoenix', ['Arclight Phoenix', 'Fatal Push']),
+        SimpleRule('Amalia Combo', ['Amalia Benavides Aguirre', 'Wildgrowth Walker']),
+        SimpleRule('Waste Not', ['Waste Not']),
+        SimpleRule('Spirits', ['Supreme Phantom', 'Mausoleum Wanderer']),
         UWControl(),
         LotusField(),
         RakdosLegacy(),
@@ -258,5 +211,9 @@ def universal_classifier() -> Classifier:
         SimpleRule('Jeskai Ascendancy', ['Jeskai Ascendancy']),
         SimpleRule('Izzet Drakes', ['Crackling Drake', 'Ledger Shredder']),
         SimpleRule('Gruul Madness', ['Burning-Tree Emissary', 'Hazoret the Fervent']),
+        SimpleRule('Stormwing', ['Stormwing Entity']),
+        SimpleRule('Niv-Mizzet, Supreme', ['Niv-Mizzet, Supreme']),
+        SimpleRule('Elves, Supreme', ['Leaf-Crowned Visionary']),
+        SimpleRule('Boros Vehicles', ['Veteran Motorist', 'Toolcraft Exemplar']),
         SimpleRule('Adventures', ['Lucky Clover']),
     ])

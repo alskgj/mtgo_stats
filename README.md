@@ -5,7 +5,7 @@ Fetches all pioneer tournaments published on mtgo.com and calculates the win and
 ### Sample Output (31/03/2024)
 ```
 Deck Name                   Play Rate      Win Rate       
-==========================================================
+====================================================
 1  Rakdos Vampires          19.44          50.08          
 2  Izzet Phoenix            17.66          50.71          
 3  Waste Not                10.83          49.1           

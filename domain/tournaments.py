@@ -52,10 +52,10 @@ class TournamentHandler:
         combined = [{'name': deck, 'wr': win_rates[deck], 'pr': play_rates[deck]} for deck in win_rates]
         combined = sorted(combined, key=lambda deck: deck['pr'], reverse=True)
 
-        title = f'{"Deck Name":<28}{"Play Rate":<15}{"Win Rate":<15}'
+        title = f'{"Deck":<24}{"PR":<7}{"WR":<5}'
         print(title)
         print('='*len(title))
         for i, deck in enumerate(combined):
             if deck['name'] is None:
                 deck['name'] = 'Not Classified'
-            print(f'{i+1:<3}{deck["name"]:<25}{deck["pr"]:<15}{deck["wr"]:<15}')
+            print(f'{i+1:<3}{deck["name"]:<21}{deck["pr"]:<7}{deck["wr"]:<5}')
