@@ -1,7 +1,24 @@
 from datetime import datetime, timedelta
 from typing import Dict, List
 
+import pydantic
+import numpy as np
+import scipy
 from domain.model import Tournament, Classifier, TournamentParticipant, DeckName
+
+
+class WinRate(pydantic.BaseModel):
+    mean: float
+    lower_bound: float
+    upper_bound: float
+
+
+def mean_confidence_interval(data, confidence=0.95):
+    a = 1.0 * np.array(data)
+    n = len(a)
+    m, se = np.mean(a), scipy.stats.sem(a)
+    h = se * scipy.stats.t.ppf((1 + confidence) / 2., n-1)
+    return round(m, 2), round(m-h, 2), round(m+h, 2)
 
 
 class TournamentHandler:
@@ -22,16 +39,17 @@ class TournamentHandler:
                 decks[deckname] += players
         return decks
 
-    def win_rates(self, max_days: int = 0) -> Dict[str, float]:
+    def win_rates(self, max_days: int = 0) -> Dict[DeckName, float]:
         decks = self.build_decks_tournament_mapping(max_days)
         result = {}
         for deck_name in decks:
+
             total_wins = sum(p.wins for p in decks[deck_name])
             total_games = sum(p.wins + p.losses for p in decks[deck_name])
             result[deck_name] = round(total_wins / total_games * 100, 2)
         return result
 
-    def play_rates(self, max_days: int = 0) -> Dict[str, float]:
+    def play_rates(self, max_days: int = 0) -> Dict[DeckName, float]:
         decks = self.build_decks_tournament_mapping(max_days)
         result = {}
         total_decks = sum(len(decks[deck_name]) for deck_name in decks)
@@ -49,13 +67,27 @@ class TournamentHandler:
     def show_stats(self, max_days=14):
         win_rates = self.win_rates(max_days)
         play_rates = self.play_rates(max_days)
-        combined = [{'name': deck, 'wr': win_rates[deck], 'pr': play_rates[deck]} for deck in win_rates]
+        raw = self.build_decks_tournament_mapping(max_days)
+
+        combined = [{'name': deck, 'wr': win_rates[deck], 'pr': play_rates[deck], 'num': len(raw[deck]),
+                     }
+                    for deck in win_rates]
         combined = sorted(combined, key=lambda deck: deck['pr'], reverse=True)
 
-        title = f'{"Deck":<24}{"PR":<7}{"WR":<5}'
+        name_length = max(len(deck['name']) for deck in combined if deck['name'])+6
+        title = f'{"Deck":<{name_length}}{"PR%":<7}{"WR%":<7}{"#decks":<5}'
         print(title)
         print('='*len(title))
-        for i, deck in enumerate(combined):
+
+        i = 1
+        for deck in combined:
             if deck['name'] is None:
-                deck['name'] = 'Not Classified'
-            print(f'{i+1:<3}{deck["name"]:<21}{deck["pr"]:<7}{deck["wr"]:<5}')
+                deck['name'] = DeckName('Not Classified')
+
+            # if not deck['name'].startswith('Vamps'):
+            #     continue
+            # if not deck['name'].startswith('Izzet Phoenix'):
+            #     continue
+
+            print(f'{i:<3}{deck["name"]:<{name_length-3}}{deck["pr"]:<7}{deck["wr"]:<7}{deck["num"]:<5}')
+            i += 1

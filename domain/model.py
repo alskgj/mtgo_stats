@@ -63,7 +63,7 @@ class Deck(BaseModel):
     side: List[Card] = []
 
     def contains_at_least_three(self, card_name):
-        return any([card.name == card_name and card.quantity >= 3 for card in self.main+self.side])
+        return any([card.name == card_name and card.quantity >= 3 for card in self.main])
 
     def contains_at_least(self, x: int, card_name: str):
         return any([card.name == card_name and card.quantity >= x for card in self.main + self.side])
