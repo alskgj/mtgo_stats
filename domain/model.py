@@ -63,7 +63,7 @@ class Deck(BaseModel):
     side: List[Card] = []
 
     def contains_at_least_three(self, card_name):
-        return any([card.name == card_name and card.quantity >= 3 for card in self.main+self.side])
+        return any([card.name == card_name and card.quantity >= 3 for card in self.main])
 
     def contains_at_least(self, x: int, card_name: str):
         return any([card.name == card_name and card.quantity >= x for card in self.main + self.side])
@@ -88,6 +88,17 @@ class Deck(BaseModel):
         return result
 
 
+DeckName = NewType('DeckName', str)
+
+
+class Result(BaseModel):
+    deck: Deck
+    deck_name: DeckName
+    wins: int
+    losses: int
+    date: datetime
+
+
 class TournamentParticipant(BaseModel):
     name: str
     rank: int
@@ -96,7 +107,17 @@ class TournamentParticipant(BaseModel):
     deck: Deck
 
 
-DeckName = NewType('DeckName', str)
+class WinRate(BaseModel):
+    mean: float
+    lower_bound: float
+    upper_bound: float
+
+
+class DeckStat(BaseModel):
+    name: DeckName
+    win_rate: WinRate
+    play_rate: float
+    total_matches: int
 
 
 class Tournament(BaseModel):
@@ -145,3 +166,4 @@ class Classifier:
         for rule in self.rules:
             if rule.satisfied_by(deck):
                 return rule.deck_name
+        return DeckName('Unclassified Deck')
