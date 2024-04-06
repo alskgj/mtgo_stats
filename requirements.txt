@@ -1,6 +1,10 @@
-pydantic~=2.6.4
-requests~=2.31.0
-beautifulsoup4~=4.12.3
-pytest~=8.1.1
+pydantic
+requests
+beautifulsoup4
+pytest
 
-pymongo~=4.6.3
+pymongo
+
+numpy
+scipy
+typer

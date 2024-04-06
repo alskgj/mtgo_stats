@@ -4,7 +4,11 @@ from typing import Dict, List
 import pydantic
 import numpy as np
 import scipy
-from domain.model import Tournament, Classifier, TournamentParticipant, DeckName
+
+from adapters.repository import MongoRepository
+from domain import rules
+from domain.model import Tournament, Classifier, TournamentParticipant, DeckName, Card
+from service_layer.services import get_mongo_db
 
 
 class WinRate(pydantic.BaseModel):

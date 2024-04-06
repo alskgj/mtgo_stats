@@ -176,50 +176,12 @@ class RakdosVampires(AbstractClassificationRule):
         if not (deck.contains_at_least_three('Vein Ripper') and
                 deck.contains_at_least_three('Sorin, Imperious Bloodlord')):
             return False
-        # archfiend = [card for card in deck.main if card.name == 'Archfiend of the Dross']
-        # archfiend = archfiend[0].quantity if archfiend else 0
-        # lilis = [card for card in deck.main if card.name == 'Liliana of the Veil']
-        # lilis = lilis[0].quantity if lilis else 0
-        # sheoldred = [card for card in deck.main if card.name == 'Sheoldred, the Apocalypse']
-        # sheoldred = sheoldred[0].quantity if sheoldred else 0
-
-        # self._name = DeckName(f'Vamps ({archfiend} Archfiends, {sheoldred} Sheoldred)')
         self._name = DeckName(f'Rakdos Vampires')
-        return True
-
-
-class IzzetPhoenix(AbstractClassificationRule):
-
-    _name = DeckName('Rakdos Vampires')
-
-    @property
-    def deck_name(self) -> DeckName:
-        return self._name
-
-    def satisfied_by(self, deck: Deck):
-        if not (deck.contains_at_least_three('Arclight Phoenix') and
-                deck.contains_at_least_three('Lightning Axe')):
-            return False
-        # hazards = [card for card in deck.main if card.name == 'Spikefield Hazard']
-        # hazards = hazards[0].quantity if hazards else 0
-        # jwari = [card for card in deck.main if card.name == 'Jwari Disruption']
-        # jwari = jwari[0].quantity if jwari else 0
-        # lands = sum([card.quantity for card in deck.main if card.type == CardType.land])
-
-        proft = [card for card in deck.main if card.name == "Proft's Eidetic Memory"]
-        proft = proft[0].quantity if proft else 0
-        # canals = [card for card in deck.main if card.name == 'Spirebluff Canal']
-        # canals = canals[0].quantity if canals else 0
-
-        self._name = DeckName(f'Izzet Phoenix ({proft=})')
-        self._name = DeckName(f'Izzet Phoenix')
-        # self._name = DeckName(f'Izzet Phoenix ({coast=})')
         return True
 
 
 def universal_classifier() -> Classifier:
     return Classifier([
-        # ProftsPhoenix(),
         RedAggro(),
         RakdosVampires(),
         SimpleRule('Rakdos Vampires (Lili)', ['Vein Ripper', 'Sorin, Imperious Bloodlord',
@@ -227,7 +189,7 @@ def universal_classifier() -> Classifier:
         SimpleRule('Rakdos Vampires (Archfiend)', ['Vein Ripper', 'Sorin, Imperious Bloodlord',
                                                    'Archfiend of the Dross']),
         SimpleRule('Rakdos Vampires', ['Vein Ripper', 'Sorin, Imperious Bloodlord']),
-        IzzetPhoenix(),
+        SimpleRule('Izzet Phoenix', ['Arclight Phoenix']),
         SimpleRule('Grixis Phoenix', ['Arclight Phoenix', 'Fatal Push']),
         SimpleRule('Amalia Combo', ['Amalia Benavides Aguirre', 'Wildgrowth Walker']),
         SimpleRule('Waste Not', ['Waste Not']),
