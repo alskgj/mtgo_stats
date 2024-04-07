@@ -3,7 +3,8 @@ from datetime import datetime
 import pytest
 
 from domain import rules
-from domain.model import Deck, Card, Rarity, Color, CardType, Tournament, TournamentParticipant, Classifier
+from domain.model import Deck, Card, Rarity, Color, CardType, Tournament, TournamentParticipant, Classifier, Result, \
+    DeckName
 
 
 @pytest.fixture
@@ -128,6 +129,28 @@ def medium_tournament(izzet_phoenix, rakdos_vampires, amalia_combo) -> Tournamen
         ],
         start_time=datetime.fromisoformat('2023-03-30 10:00:00'),
         link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+    )
+
+
+@pytest.fixture
+def izzet_phoenix_result(izzet_phoenix: Deck) -> Result:
+    return Result(
+        deck=izzet_phoenix,
+        deck_name=DeckName('Izzet Phoenix'),
+        wins=3,
+        losses=0,
+        date=datetime.fromisoformat('2023-03-30 10:00:00')
+    )
+
+
+@pytest.fixture
+def rakdos_vampires_result(rakdos_vampires: Deck) -> Result:
+    return Result(
+        deck=rakdos_vampires,
+        deck_name=DeckName('Rakdos Vampires'),
+        wins=1,
+        losses=1,
+        date=datetime.fromisoformat('2023-03-30 10:00:00')
     )
 
 

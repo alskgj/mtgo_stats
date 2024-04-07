@@ -1,17 +1,8 @@
-"""
-
-    model.py
-    ========
-
-
-
-
-"""
 from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel
-from typing import List, Dict, NewType
+from typing import List, NewType
 
 from abc import ABC, abstractmethod
 
@@ -76,12 +67,12 @@ class Deck(BaseModel):
         creatures = [card for card in self.main if card.type == CardType.creature]
         spells = [card for card in self.main if card.type in (CardType.instant, CardType.sorcery)]
         lands = [card for card in self.main if card.type == CardType.land]
-        others = [card for card in self.main if card not in creatures+spells+lands]
+        others = [card for card in self.main if card not in creatures + spells + lands]
 
         result = ""
         grouping = [('Creatures', creatures), ('Spells', spells), ('Lands', lands), ('Other', others)]
         for title, cat in grouping:
-            result += f'{title}\n{len(title)*"="}\n'
+            result += f'{title}\n{len(title) * "="}\n'
             for card in cat:
                 result += f'{card}\n'
             result += '\n'
@@ -127,23 +118,6 @@ class Tournament(BaseModel):
     players: List[TournamentParticipant]
     start_time: datetime
     link: str
-
-    def deckname_to_players(self, classifier: 'Classifier') -> Dict[DeckName, List[TournamentParticipant]]:
-        decks: Dict[DeckName, List[TournamentParticipant]] = {}
-        for player in self.players:
-            deck_name = classifier.classify(player.deck)
-            if deck_name not in decks:
-                decks[deck_name] = []
-            decks[deck_name].append(player)
-        return decks
-
-    def play_rates(self, classifier: 'Classifier') -> Dict[str, float]:
-        decks = self.deckname_to_players(classifier)
-        result = {}
-        for deck_name in decks:
-            total_decks = len(self.players)
-            result[deck_name] = round(len(decks[deck_name]) / total_decks, 2)
-        return result
 
 
 class AbstractClassificationRule(ABC):
