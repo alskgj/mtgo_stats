@@ -74,7 +74,7 @@ class ResultHandler:
                 continue
 
             for name in cards:
-                num = sum([card.quantity for card in result.deck.main + result.deck.side if card.name == name])
+                num = sum([card.quantity for card in result.deck.main+result.deck.side if card.name == name])
                 result.deck_name = f'{result.deck_name} ({num}x {name})'
             new_results.append(result)
 
@@ -116,8 +116,10 @@ class ResultHandler:
 
     def show_stats(self, min_matches=10):
         deck_stats = self.calculate_deck_stats()
-        deck_stats.sort(key=lambda a: a.total_matches, reverse=True)
+        deck_stats.sort(key=lambda a: a.play_rate, reverse=True)
         deck_stats = [d for d in deck_stats if d.total_matches >= min_matches]
+        for deck in deck_stats:
+            deck.name = deck.name.replace('Temporal Trespass', 'TT').replace('Galvanic Iteration', 'GI')
 
         name_length = max(len(deck.name) for deck in deck_stats)+3
         title = f'{"#":<3}{"Deck":<{name_length}}{"PR%":<7}{"WR%":<7}95% CI: [L, U]    {"#matches":<5}'

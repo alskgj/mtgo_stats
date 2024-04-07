@@ -133,4 +133,7 @@ def medium_tournament(izzet_phoenix, rakdos_vampires, amalia_combo) -> Tournamen
 
 @pytest.fixture
 def classifier() -> Classifier:
-    return rules.universal_classifier()
+    return Classifier([
+        rules.SimpleRule('Izzet Phoenix', ['Arclight Phoenix']),
+        rules.SimpleRule('Rakdos Vampires', ['Vein Ripper']),
+    ])

@@ -32,8 +32,7 @@ from adapters.repository import MongoRepository
 from domain import rules
 from domain.model import DeckName
 from domain.stats import ResultHandler, extract_results
-from domain.tournaments import TournamentHandler
-from service_layer.services import cache_tournaments, get_mongo_db
+from service_layer.services import cache_tournaments, get_mongo_db, find_unclassified_decks
 
 app = typer.Typer()
 
@@ -55,9 +54,7 @@ def unclassified():
     repo = MongoRepository(get_mongo_db())
     tournaments = list(repo.get_tournament_ids())
     all_tournaments = [repo.get(t) for t in tournaments]
-
-    th = TournamentHandler(all_tournaments, rules.universal_classifier())
-    th.find_unclassified_decks()
+    find_unclassified_decks(all_tournaments, rules.universal_classifier())
 
 
 @app.command()
@@ -87,8 +84,5 @@ def stats(
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    """
-    python cli.py stats --deck "Izzet Phoenix" --card "Arclight Phoenix"
-    """
 
     app()
