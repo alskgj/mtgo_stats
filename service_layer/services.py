@@ -5,7 +5,7 @@ import pymongo.database
 
 from adapters.repository import AbstractRepository
 from adapters.mtgo_api import AbstractAPI
-from domain.model import Classifier, Tournament, DeckName
+from domain.model import Classifier, Tournament, DeckName, Deck, CardType
 
 
 def get_mongo_db() -> pymongo.database.Database:
@@ -23,13 +23,26 @@ def cache_tournaments(api: AbstractAPI, repo: AbstractRepository):
             repo.add(tournament, tournament_link)
 
 
-def find_unclassified_decks(tournaments: List[Tournament], classifier: Classifier):
+def print_deck_summary(deck: Deck):
+    four_offs = [card for card in deck.main if card.quantity == 4 and card.type != CardType.land]
+    if not four_offs:
+        print(deck)
+        return
+    for card in four_offs:
+        print(card)
+
+
+def find_unclassified_decks(tournaments: List[Tournament], classifier: Classifier, verbose=False):
     classified, unclassified = 0, 0
     for tournament in tournaments:
         for player in tournament.players:
             if classifier.classify(player.deck) == DeckName('Unclassified Deck'):
                 print(f'Unknown deck from {player.name} at: {tournament.link}')
-                print(player.deck)
+                if verbose:
+                    print(player.deck)
+                else:
+                    print_deck_summary(player.deck)
+                    print()
                 unclassified += 1
             else:
                 classified += 1
