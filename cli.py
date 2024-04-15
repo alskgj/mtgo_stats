@@ -61,6 +61,7 @@ def unclassified():
 def stats(
         deck: Annotated[str, typer.Option(help="Stats for a specific deck, e.g. 'Izzet Phoenix'")] = None,
         card: Annotated[List[str], typer.Option(help="Implies --deck, differentiate win rate by this card")] = None,
+        max_days: int = 14
 ):
     deck = DeckName(deck)
     if card and deck is None:
@@ -72,7 +73,7 @@ def stats(
     all_tournaments = [repo.get(t) for t in tournaments]
     results = extract_results(all_tournaments, rules.universal_classifier())
     rh = ResultHandler(results)
-    rh.filter(20)
+    rh.filter(max_days)
 
     # filter decks   -> fewer decks
     if deck and card:
