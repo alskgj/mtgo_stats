@@ -3,9 +3,9 @@ from typing import List
 
 import pymongo.database
 
-from adapters.repository import AbstractRepository
-from adapters.mtgo_api import AbstractAPI
-from domain.model import Classifier, Tournament, DeckName, Deck, CardType
+from ..adapters.repository import AbstractRepository
+from ..adapters.mtgo_api import AbstractAPI
+from ..domain.model import Classifier, Tournament, DeckName, Deck, CardType
 
 
 def get_mongo_db() -> pymongo.database.Database:

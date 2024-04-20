@@ -23,16 +23,17 @@ Deck                                   PR%    WR%    #decks
 
 """
 import logging
+import time
 from typing import Annotated, List
 
 import typer
 
-from adapters.mtgo_api import MtgoAPI
-from adapters.repository import MongoRepository
-from domain import rules
-from domain.model import DeckName
-from domain.stats import ResultHandler, extract_results
-from service_layer.services import cache_tournaments, get_mongo_db, find_unclassified_decks
+from .adapters.mtgo_api import MtgoAPI
+from .adapters.repository import MongoRepository
+from .domain import rules
+from .domain.model import DeckName
+from .domain.stats import ResultHandler, extract_results
+from .service_layer.services import cache_tournaments, get_mongo_db, find_unclassified_decks
 
 app = typer.Typer()
 
@@ -69,11 +70,10 @@ def stats(
         return
 
     repo = MongoRepository(get_mongo_db())
-    tournaments = list(repo.get_tournament_ids())
+    tournaments = list(repo.get_tournament_ids(max_days))
     all_tournaments = [repo.get(t) for t in tournaments]
     results = extract_results(all_tournaments, rules.universal_classifier())
     rh = ResultHandler(results)
-    rh.filter(max_days)
 
     # filter decks   -> fewer decks
     if deck and card:
@@ -83,7 +83,10 @@ def stats(
     rh.show_stats()
 
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=logging.INFO)
-
     app()
+
+
+if __name__ == '__main__':
+    main()

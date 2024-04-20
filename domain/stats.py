@@ -5,7 +5,7 @@ from typing import List, Dict
 import numpy
 import scipy
 
-from domain.model import Classifier, Tournament, DeckName, Result, Deck, DeckStat, WinRate
+from .model import Classifier, Tournament, DeckName, Result, Deck, DeckStat, WinRate
 
 
 def mean_confidence_interval(data, confidence=0.95):
@@ -114,12 +114,10 @@ class ResultHandler:
 
         return deck_stats
 
-    def show_stats(self, min_matches=10):
+    def show_stats(self, min_matches=0):
         deck_stats = self.calculate_deck_stats()
         deck_stats.sort(key=lambda a: a.play_rate, reverse=True)
         deck_stats = [d for d in deck_stats if d.total_matches >= min_matches]
-        for deck in deck_stats:
-            deck.name = deck.name.replace('Temporal Trespass', 'TT').replace('Galvanic Iteration', 'GI')
 
         name_length = max(len(deck.name) for deck in deck_stats)+3
         title = f'{"#":<3}{"Deck":<{name_length}}{"PR%":<7}{"WR%":<7}95% CI: [L, U]    {"#matches":<5}'

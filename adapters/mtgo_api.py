@@ -7,8 +7,8 @@ from typing import List
 import requests
 from bs4 import BeautifulSoup
 
-from domain import model
-from domain.model import TournamentParticipant, Deck, Card, CardType, Color
+from ..domain import model
+from ..domain.model import TournamentParticipant, Deck, Card, CardType, Color
 
 
 class AbstractAPI(abc.ABC):

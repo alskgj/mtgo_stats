@@ -1,6 +1,6 @@
 from typing import List
 
-from domain.model import Deck, AbstractClassificationRule, Classifier, DeckName, CardType, Card
+from .model import Deck, AbstractClassificationRule, Classifier, DeckName, CardType
 
 
 def deck_contains_at_least_three(deck: Deck, card_name: str) -> bool:
@@ -16,7 +16,8 @@ class RedAggro(AbstractClassificationRule):
         return (deck.contains_at_least_three('Monastery Swiftspear') and
                 (
                     deck.contains_at_least(2, 'Kumano Faces Kakkazan') or
-                    deck.contains_at_least_three('Viashino Pyromancer')
+                    deck.contains_at_least_three('Viashino Pyromancer') or
+                    deck.contains_at_least_three('Skewer the Critics')
                 ))
 
 
@@ -200,7 +201,7 @@ def universal_classifier() -> Classifier:
         MonoBControl(),
         UBControl(),
         IzzetControl(),
-        SimpleRule('Auras', ['Ethereal Armor', 'Skrelv, Defector Mite']),
+        SimpleRule('Auras', ['Ethereal Armor']),
         SimpleRule('Bring to Light', ['Bring to Light']),
         SimpleRule('Boros Heroic', [
             'Favored Hoplite', 'Monastery Swiftspear', 'Illuminator Virtuoso'
@@ -259,4 +260,7 @@ def universal_classifier() -> Classifier:
         SimpleRule('Reenact the Crime', ['Reenact the Crime']),
         SimpleRule('Coveted Falcon', ['Coveted Falcon']),
         SimpleRule('Colossification', ['Colossification']),
+        SimpleRule('Collected Company', ['Collected Company']),
+        SimpleRule('Triskaidekaphile', ['Triskaidekaphile']),
+        SimpleRule('Metalwork Colossus', ['Metalwork Colossus']),
     ])

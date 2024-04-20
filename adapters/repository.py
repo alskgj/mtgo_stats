@@ -1,10 +1,10 @@
 import abc
 from typing import List, Set
 
-from domain import model
+from ..domain import model
 from pymongo.database import Database
 from pymongo.collection import Collection
-
+import datetime
 
 class AbstractRepository(abc.ABC):
     @abc.abstractmethod
@@ -40,7 +40,15 @@ class MongoRepository(AbstractRepository):
         result = self.tournaments.aggregate(only_link_field_query)
         return set(r['link'] for r in result)
 
-    def get_tournament_ids(self) -> Set[int]:
-        only_link_field_query = [{'$project': {'id': 1}}]
+    def get_tournament_ids(self, max_days=None) -> Set[int]:
+        if max_days is None:
+            only_link_field_query = [{'$project': {'id': 1}}]
+        else:
+            date = datetime.datetime.now() - datetime.timedelta(days=max_days)
+            only_link_field_query = [
+                {'$match': {'start_time': {'$gte': date}}},
+                {'$project': {'id': 1}}
+            ]
+
         result = self.tournaments.aggregate(only_link_field_query)
         return set(r['id'] for r in result)
