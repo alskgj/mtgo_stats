@@ -6,3 +6,6 @@ pymongo
 numpy
 scipy
 typer
+fastapi
+uvicorn
+httpx
