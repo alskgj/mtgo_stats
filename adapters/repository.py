@@ -1,10 +1,11 @@
 import abc
 from typing import List, Set
 
-from ..domain import model
+from domain import model
 from pymongo.database import Database
 from pymongo.collection import Collection
 import datetime
+
 
 class AbstractRepository(abc.ABC):
     @abc.abstractmethod
@@ -17,6 +18,9 @@ class AbstractRepository(abc.ABC):
 
     @abc.abstractmethod
     def list_cached_tournaments(self) -> List[str]:
+        ...
+
+    def get_tournament_ids(self, max_days=None) -> Set[int]:
         ...
 
 

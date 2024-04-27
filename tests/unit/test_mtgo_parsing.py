@@ -1,7 +1,8 @@
 import json
 
 import pytest
-import adapters.mtgo_api
+
+import adapters
 
 
 @pytest.fixture
@@ -19,6 +20,7 @@ def card_data():
 
 
 def test_parse_players(tournament_data):
+
     parsed = adapters.mtgo_api.parse_players(tournament_data)
     assert True
 
