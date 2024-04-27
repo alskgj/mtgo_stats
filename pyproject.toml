@@ -17,9 +17,12 @@ dependencies = [
     "pymongo",
     "numpy",
     "scipy",
-    "typer"
+    "typer",
+    "fastapi",
+    "uvicorn"
 ]
 requires-python = ">= 3.9"
 
 [project.scripts]
 mtgo-cli = "cli:main"
+mtgo-api = "rest:main"

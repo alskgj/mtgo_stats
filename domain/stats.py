@@ -124,3 +124,13 @@ class ResultHandler:
                   f'[{deck.win_rate.lower_bound:<5}%, {deck.win_rate.upper_bound:<5}%]  {deck.total_matches:<5}')
             if max_results and i > max_results:
                 break
+
+    def fetch_stats(self, min_matches=0) -> List[DeckStat]:
+        if len(self.results) == 0:
+            return []
+
+        deck_stats = self.calculate_deck_stats()
+        deck_stats.sort(key=lambda a: a.play_rate, reverse=True)
+        deck_stats = [d for d in deck_stats if d.total_matches >= min_matches]
+
+        return deck_stats
