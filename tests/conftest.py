@@ -1,10 +1,8 @@
 from datetime import datetime
 
 import pytest
-
-from mtgoResultsTracker import domain
-import mtgoResultsTracker.domain.rules
-
+import domain
+import domain.rules
 
 @pytest.fixture
 def rakdos_vampires() -> domain.Deck:

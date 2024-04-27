@@ -8,8 +8,8 @@ import pymongo.database
 import adapters.mtgo_api
 import domain
 
-from mtgoResultsTracker.adapters.repository import MongoRepository
-from mtgoResultsTracker.service_layer.services import cache_tournaments
+from adapters.repository import MongoRepository
+from service_layer.services import cache_tournaments
 
 
 class FakeAPI(adapters.mtgo_api.AbstractAPI):
