@@ -2,9 +2,7 @@ pydantic
 requests
 beautifulsoup4
 pytest
-
 pymongo
-
 numpy
 scipy
 typer

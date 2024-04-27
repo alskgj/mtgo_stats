@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+
+[project]
+name = "mtgo-stats"
+version = "1.0.0"
+dependencies = [
+    "pydantic",
+    "requests",
+    "beautifulsoup4",
+    "pytest",
+    "pymongo",
+    "numpy",
+    "scipy",
+    "typer"
+]
+requires-python = ">= 3.9"
+
+[project.scripts]
+mtgo-cli = "cli:main"

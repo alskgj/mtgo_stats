@@ -53,3 +53,20 @@ python cli.py fetch
 python cli.py stats
 (display stats)
 ```
+
+Or alternatively, using pip (you still need to install mongodb)
+```
+# clone the repo, cd to the repo
+
+# create a virtual environment, install the requirements
+mtgo_stats$ python3 -m venv env
+mtgo_stats$ source env/bin/activate
+mtgo_stats$ pip install -e .
+
+# execute the cli, fetch old tournaments first
+mtgo_stats$ mtgo-cli fetch
+(will fetch this months tournament data)
+
+mtgo_stats$ mtgo-cli stats
+(display stats)
+```
