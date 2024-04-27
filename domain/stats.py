@@ -2,27 +2,21 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import List, Dict
 
-import numpy
-import scipy
-
-from .model import Classifier, Tournament, DeckName, Result, Deck, DeckStat, WinRate
+from .model import Classifier, Tournament, DeckName, Result, DeckStat, WinRate
+import numpy as np
 
 
-def mean_confidence_interval(data, confidence=0.95):
-    if data == [0.0]:
+def wilson_score_confidence_interval(wins, losses, z=1.96):
+    if wins+losses == 0:
         return 0, 0, 0
-    data = 1.0 * numpy.array(data)
-    mean, standard_error = numpy.mean(data), scipy.stats.sem(data)
-    confidence = standard_error * scipy.stats.t.ppf((1 + confidence) / 2., len(data)-1)
-    return round(mean, 4), round(mean-confidence, 4), round(mean+confidence, 4)
+    n = wins + losses
+    p_hat = wins/n
+    a = (1 / (1 + (z**2)/n)) * (p_hat + (z**2)/(2*n))
+    b = (z / (1 + (z**2)/n)) * np.sqrt(p_hat*(1-p_hat)/n + (z**2)/(4*(n**2)))
+    lower = a - b
+    upper = a + b
 
-
-def test_mean_confidence_interval():
-    data = [0.5, 0.55, 0.6, 0.6]
-    mean, lower, upper = mean_confidence_interval(data)
-    assert 0.56 == mean
-    assert 0.49 == lower
-    assert 0.64 == upper
+    return wins/n, lower, upper
 
 
 def extract_results(tournaments: List[Tournament], classifier: Classifier) -> List[Result]:
@@ -83,12 +77,10 @@ class ResultHandler:
     @staticmethod
     def calculate_win_rate(results: List[Result]) -> WinRate:
 
-        # calculate a WR for every result, weigh it according to number of matches played
-        weighted_winrates = []
-        for result in results:
-            wr = result.wins/(result.wins+result.losses)
-            weighted_winrates += [wr]*(result.wins+result.losses)
-        mean, lower, upper = mean_confidence_interval(weighted_winrates)
+        mean, lower, upper = wilson_score_confidence_interval(
+            wins=sum(result.wins for result in results),
+            losses=sum(result.losses for result in results)
+        )
 
         return WinRate(mean=round(mean*100, 2), lower_bound=round(lower*100, 2), upper_bound=round(upper*100, 2))
 
@@ -114,7 +106,7 @@ class ResultHandler:
 
         return deck_stats
 
-    def show_stats(self, min_matches=0):
+    def show_stats(self, min_matches=0, max_results=0):
         deck_stats = self.calculate_deck_stats()
         deck_stats.sort(key=lambda a: a.play_rate, reverse=True)
         deck_stats = [d for d in deck_stats if d.total_matches >= min_matches]
@@ -127,3 +119,5 @@ class ResultHandler:
         for i, deck in enumerate(deck_stats):
             print(f'{i+1:<3}{deck.name:<{name_length}}{deck.play_rate:<7}{deck.win_rate.mean:<7}'
                   f'[{deck.win_rate.lower_bound:<5}%, {deck.win_rate.upper_bound:<5}%]  {deck.total_matches:<5}')
+            if max_results and i > max_results:
+                break

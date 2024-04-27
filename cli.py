@@ -23,17 +23,16 @@ Deck                                   PR%    WR%    #decks
 
 """
 import logging
-import time
 from typing import Annotated, List
 
 import typer
 
-from .adapters.mtgo_api import MtgoAPI
-from .adapters.repository import MongoRepository
-from .domain import rules
-from .domain.model import DeckName
-from .domain.stats import ResultHandler, extract_results
-from .service_layer.services import cache_tournaments, get_mongo_db, find_unclassified_decks
+from adapters.mtgo_api import MtgoAPI
+from adapters.repository import MongoRepository
+from domain import rules
+from domain.model import DeckName
+from domain.stats import ResultHandler, extract_results
+from service_layer.services import cache_tournaments, get_mongo_db, find_unclassified_decks
 
 app = typer.Typer()
 
@@ -62,7 +61,8 @@ def unclassified():
 def stats(
         deck: Annotated[str, typer.Option(help="Stats for a specific deck, e.g. 'Izzet Phoenix'")] = None,
         card: Annotated[List[str], typer.Option(help="Implies --deck, differentiate win rate by this card")] = None,
-        max_days: int = 14
+        max_days: int = 14,
+        max_results: int = 10
 ):
     deck = DeckName(deck)
     if card and deck is None:
@@ -80,7 +80,7 @@ def stats(
         rh.split_deck_by_cards(deck, card)
 
     # display stats
-    rh.show_stats()
+    rh.show_stats(max_results=max_results)
 
 
 def main():

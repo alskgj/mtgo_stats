@@ -142,15 +142,6 @@ class MemeDeck(AbstractClassificationRule):
         )
 
 
-class ProftsPhoenix(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Profts Phoenix!')
-
-    def satisfied_by(self, deck: Deck):
-        return (deck.contains_at_least(1, "Proft's Eidetic Memory") and
-                deck.contains_at_least(3, "Arclight Phoenix"))
-
 
 class SimpleRule(AbstractClassificationRule):
     def __init__(self, name: str, key_cards: List[str]):
@@ -183,6 +174,7 @@ class RakdosVampires(AbstractClassificationRule):
 
 def universal_classifier() -> Classifier:
     return Classifier([
+        SimpleRule('Slickshot Show-Off', ['Slickshot Show-Off']),
         RedAggro(),
         RakdosVampires(),
         SimpleRule('Rakdos Vampires', ['Vein Ripper', 'Sorin, Imperious Bloodlord']),

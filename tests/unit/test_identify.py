@@ -1,5 +1,4 @@
-from domain.model import Classifier
-import domain.rules as rules
+from mtgoResultsTracker.domain import Classifier
 
 
 def test_decks_are_identified_correctly(rakdos_vampires, izzet_phoenix, classifier: Classifier):

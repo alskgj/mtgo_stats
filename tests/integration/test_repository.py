@@ -2,28 +2,29 @@ from typing import List
 
 import pytest
 
-from adapters.repository import MongoRepository
-from adapters.mtgo_api import AbstractAPI
-from domain import model
-from service_layer.services import cache_tournaments
-from tests.conftest import small_tournament
 import pymongo
 import pymongo.database
 
+import adapters.mtgo_api
+import domain
 
-class FakeAPI(AbstractAPI):
+from mtgoResultsTracker.adapters.repository import MongoRepository
+from mtgoResultsTracker.service_layer.services import cache_tournaments
+
+
+class FakeAPI(adapters.mtgo_api.AbstractAPI):
     """ Drop in replacement for the MTGO API for testing. Use register_tournament to """
 
     def __init__(self):
         self._tournaments = {}
 
-    def fetch_tournament(self, tournament_link: str) -> model.Tournament:
+    def fetch_tournament(self, tournament_link: str) -> domain.Tournament:
         return self._tournaments.get(tournament_link)
 
     def list_tournament_links(self) -> List[str]:
         return list(self._tournaments.keys())
 
-    def register_tournament(self, link: str, tournament: model.Tournament):
+    def register_tournament(self, link: str, tournament: domain.Tournament):
         self._tournaments[link] = tournament
 
 
@@ -55,7 +56,7 @@ def test_retrieving_tournaments(small_tournament, repo):
     cache_tournaments(api, repo)
 
     # assert
-    assert repo.get(small_tournament.id) == small_tournament
+    assert repo.get(small_tournament.id).model_dump() == small_tournament.model_dump()
 
 
 def test_initially_empty(small_tournament, repo):
