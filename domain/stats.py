@@ -107,6 +107,9 @@ class ResultHandler:
         return deck_stats
 
     def show_stats(self, min_matches=0, max_results=0):
+        if len(self.results) == 0:
+            print('Empty database... Fetch some data first!')
+            return
         deck_stats = self.calculate_deck_stats()
         deck_stats.sort(key=lambda a: a.play_rate, reverse=True)
         deck_stats = [d for d in deck_stats if d.total_matches >= min_matches]

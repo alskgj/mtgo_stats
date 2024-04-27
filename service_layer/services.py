@@ -10,7 +10,7 @@ from domain.model import Classifier, Tournament, DeckName, Deck, CardType
 
 def get_mongo_db() -> pymongo.database.Database:
     client = pymongo.MongoClient('mongodb://localhost:27017')
-    return client.get_database('dev')
+    return client.get_database('mtgo-stats-dev')
 
 
 def cache_tournaments(api: AbstractAPI, repo: AbstractRepository):
