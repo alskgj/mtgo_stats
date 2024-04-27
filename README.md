@@ -31,3 +31,25 @@ $ python cli.py stats
 9  UW Control            3.68   48.05  [45.13%, 50.97%]  256
 10 Boros Heroic          3.33   48.61  [45.37%, 51.85%]  216
 ```
+
+
+### Installation
+This project requires a running mongodb instance and Python 3.9 or newer.
+Get mongodb here: https://www.mongodb.com/try/download/community
+
+Then clone the repo and install the requirements:
+```
+# clone the repo, cd to the repo
+
+# create a virtual environment, install the requirements
+mtgo_stats$ python3 -m venv env
+mtgo_stats$ source env/bin/activate
+mtgo_stats$ pip install -r requirements.txt 
+
+# execute the cli, fetch old tournaments first
+python cli.py fetch
+(will fetch this months tournament data)
+
+python cli.py stats
+(display stats)
+```
