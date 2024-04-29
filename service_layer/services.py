@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import List
 
 import pymongo.database
@@ -9,7 +10,12 @@ from domain.model import Classifier, Tournament, DeckName, Deck, CardType
 
 
 def get_mongo_db() -> pymongo.database.Database:
-    client = pymongo.MongoClient('mongodb://localhost:27017')
+    if os.environ.get('MONGO_INITDB_ROOT_USERNAME') and os.environ.get('MONGO_INITDB_ROOT_PASSWORD'):
+        user, pw = os.environ.get('MONGO_INITDB_ROOT_USERNAME'), os.environ.get('MONGO_INITDB_ROOT_PASSWORD')
+        print(f'connecting to "mongodb://{user}:{pw}@mongo:27017"')
+        client = pymongo.MongoClient(f'mongodb://{user}:{pw}@mongo:27017')
+    else:
+        client = pymongo.MongoClient('mongodb://localhost:27017')
     return client.get_database('mtgo-stats-dev')
 
 
