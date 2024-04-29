@@ -80,11 +80,13 @@ def stats(
         rh.split_deck_by_cards(deck, card)
 
     # display stats
+    print(f'Displaying Stats for the last {max_results} days')
     rh.show_stats(max_results=max_results)
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
+    logging.getLogger('pymongo').setLevel(logging.WARNING)
     app()
 
 
