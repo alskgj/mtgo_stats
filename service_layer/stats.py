@@ -80,6 +80,7 @@ def _head():
     <th>Win Rate%</th>
     <th class="dimiOpt">[Lower, Upper]</th>
     <th class="dimiOpt"># Matches</th>
+    <th>Link</th>
   </tr>
 </thead>
 """
@@ -93,6 +94,7 @@ def _row(n, deck: domain.DeckStat) -> str:
     <td>{deck.win_rate.mean}</td>
     <td class="dimiOpt">[{deck.win_rate.lower_bound}%, {deck.win_rate.upper_bound}%]</td>
     <td class="dimiOpt">{deck.total_matches}</td>
+    <td><a href="{deck.example_link}">Deck</a></td>
   </tr>'''
 
 

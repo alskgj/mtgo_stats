@@ -136,7 +136,8 @@ def izzet_phoenix_result(izzet_phoenix: domain.Deck) -> domain.Result:
         deck_name=domain.DeckName('Izzet Phoenix'),
         wins=3,
         losses=0,
-        date=datetime.fromisoformat('2023-03-30 10:00:00')
+        date=datetime.fromisoformat('2023-03-30 10:00:00'),
+        link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Dreddybajs'
     )
 
 
@@ -147,7 +148,8 @@ def rakdos_vampires_result(rakdos_vampires: domain.Deck) -> domain.Result:
         deck_name=domain.DeckName('Rakdos Vampires'),
         wins=1,
         losses=1,
-        date=datetime.fromisoformat('2023-03-30 10:00:00')
+        date=datetime.fromisoformat('2023-03-30 10:00:00'),
+        link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Hexapuss'
     )
 
 

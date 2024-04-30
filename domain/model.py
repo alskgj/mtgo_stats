@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel
-from typing import List, NewType
+from typing import List, NewType, Optional
 
 from abc import ABC, abstractmethod
 
@@ -88,6 +88,7 @@ class Result(BaseModel):
     wins: int
     losses: int
     date: datetime
+    link: str
 
 
 class TournamentParticipant(BaseModel):
@@ -109,6 +110,7 @@ class DeckStat(BaseModel):
     win_rate: WinRate
     play_rate: float
     total_matches: int
+    example_link: str
 
 
 class Tournament(BaseModel):

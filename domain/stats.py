@@ -29,7 +29,8 @@ def extract_results(tournaments: List[Tournament], classifier: Classifier) -> Li
                 deck_name=classifier.classify(player.deck),
                 wins=player.wins,
                 losses=player.losses,
-                date=tournament.start_time
+                date=tournament.start_time,
+                link=f'{tournament.link}#deck_{player.name}',
             ))
     return result
 
@@ -102,6 +103,7 @@ class ResultHandler:
                 win_rate=self.calculate_win_rate(decks[deck]),
                 play_rate=self.calculate_play_rate(deck),
                 total_matches=sum([d.wins+d.losses for d in decks[deck]]),
+                example_link=max(decks[deck], key=lambda e: e.date).link
             ))
 
         return deck_stats

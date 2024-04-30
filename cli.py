@@ -63,8 +63,8 @@ def stats(
         deck: Annotated[str, typer.Option(help="Stats for a specific deck, e.g. 'Izzet Phoenix'")] = None,
         card: Annotated[List[str], typer.Option(help="Implies --deck, differentiate win rate by this card")] = None,
         max_days: int = 14,
-        max_results: int = 10,
-        tablefmt: str = 'text'
+        max_results: int = 15,
+        fmt: str = 'text'
 ):
 
     deck = DeckName(deck)
@@ -74,13 +74,13 @@ def stats(
     if card is None:
         card = []
 
-    if tablefmt == 'html':
+    if fmt == 'html':
         s = get_stats(
             MongoRepository(get_mongo_db()),
             deck=deck,
             cards=card,
             max_days=max_days
-        )
+        )[:max_results]
         print(create_html_table(s))
         return
 

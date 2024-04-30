@@ -23,13 +23,15 @@ def test_html_table():
         name=domain.DeckName('Izzet Phoenix'),
         win_rate=domain.WinRate(mean=47.94, lower_bound=44.54, upper_bound=51.35),
         play_rate=9.1,
-        total_matches=800
+        total_matches=800,
+        example_link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Hexapuss'
     )
     spirits = domain.DeckStat(
         name=domain.DeckName('Spirits'),
         win_rate=domain.WinRate(mean=57.6, lower_bound=50.95, upper_bound=63.99),
         play_rate=2.69,
-        total_matches=80
+        total_matches=80,
+        example_link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_remf'
     )
     result = service_layer.stats.create_html_table([izzet_phoenix, spirits])
     expected = """
@@ -79,6 +81,7 @@ def test_html_table():
     <th>Win Rate%</th>
     <th class="dimiOpt">[Lower, Upper]</th>
     <th class="dimiOpt"># Matches</th>
+    <th>Link</th>
   </tr>
 </thead>
 <tbody>
@@ -89,6 +92,7 @@ def test_html_table():
     <td>47.94</td>
     <td class="dimiOpt">[44.54%, 51.35%]</td>
     <td class="dimiOpt">800</td>
+    <td><a href="https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Hexapuss">Deck</a></td>
   </tr>
   <tr>
     <td>2</td>
@@ -97,9 +101,16 @@ def test_html_table():
     <td>57.6</td>
     <td class="dimiOpt">[50.95%, 63.99%]</td>
     <td class="dimiOpt">80</td>
+    <td><a href="https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_remf">Deck</a></td>
   </tr>
 </tbody>
 </table>
     """.strip()
 
     assert result == expected
+
+
+def test_extract_results(phoenix_tournament, classifier):
+    result = stats.extract_results([phoenix_tournament], classifier)
+    expected = f'{phoenix_tournament.link}#deck_{phoenix_tournament.players[0].name}'
+    assert expected == result[0].link
