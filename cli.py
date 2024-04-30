@@ -23,7 +23,7 @@ Deck                                   PR%    WR%    #decks
 
 """
 import logging
-from typing import Annotated, List, Literal
+from typing import Annotated, List
 
 import typer
 
@@ -66,13 +66,22 @@ def stats(
         max_results: int = 10,
         tablefmt: str = 'text'
 ):
-    if tablefmt == 'html':
-        s = get_stats(MongoRepository(get_mongo_db()))
-        print(create_html_table(s))
-        return
+
     deck = DeckName(deck)
     if card and deck is None:
         print("Got --card {card}, but no deck specified!")
+        return
+    if card is None:
+        card = []
+
+    if tablefmt == 'html':
+        s = get_stats(
+            MongoRepository(get_mongo_db()),
+            deck=deck,
+            cards=card,
+            max_days=max_days
+        )
+        print(create_html_table(s))
         return
 
     repo = MongoRepository(get_mongo_db())
@@ -82,15 +91,16 @@ def stats(
     rh = ResultHandler(results)
 
     # filter decks   -> fewer decks
-    if deck and card:
+    if deck:
         rh.split_deck_by_cards(deck, card)
 
     # display stats
+    print(f'Displaying Stats for the last {max_results} days')
     rh.show_stats(max_results=max_results)
 
 
-
 def main():
+    logging.getLogger('pymongo').setLevel(logging.WARNING)
     logging.basicConfig(level=logging.INFO)
     app()
 
