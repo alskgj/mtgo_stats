@@ -23,7 +23,7 @@ Deck                                   PR%    WR%    #decks
 
 """
 import logging
-from typing import Annotated, List
+from typing import Annotated, List, Literal
 
 import typer
 
@@ -33,6 +33,7 @@ from domain import rules
 from domain.model import DeckName
 from domain.stats import ResultHandler, extract_results
 from service_layer.services import cache_tournaments, get_mongo_db, find_unclassified_decks
+from service_layer.stats import get_stats, create_html_table
 
 app = typer.Typer()
 
@@ -62,8 +63,13 @@ def stats(
         deck: Annotated[str, typer.Option(help="Stats for a specific deck, e.g. 'Izzet Phoenix'")] = None,
         card: Annotated[List[str], typer.Option(help="Implies --deck, differentiate win rate by this card")] = None,
         max_days: int = 14,
-        max_results: int = 10
+        max_results: int = 10,
+        tablefmt: str = 'text'
 ):
+    if tablefmt == 'html':
+        s = get_stats(MongoRepository(get_mongo_db()))
+        print(create_html_table(s))
+        return
     deck = DeckName(deck)
     if card and deck is None:
         print("Got --card {card}, but no deck specified!")
@@ -81,6 +87,7 @@ def stats(
 
     # display stats
     rh.show_stats(max_results=max_results)
+
 
 
 def main():

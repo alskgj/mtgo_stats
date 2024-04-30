@@ -1,0 +1,76 @@
+<style>
+    .dimiTable {
+    border: 2px solid black;
+}
+.dimiTable th {
+  border: 2px solid black;
+  background-color: #DDD;
+}
+
+/* #Tablet (Portrait) -- # https://jsfiddle.net/2sp0hv9r/32/
+================================================== */
+/* Note: Design for a width of 768px */
+
+@media all and (min-width: 800px) {
+.dimiTable {
+    }
+}
+
+/*  #Mobile (Portrait)
+================================================== */
+/* Note: Design for a width of 320px */
+@media all and (max-width: 800px) {
+    td.dimiOpt, th.dimiOpt{
+        display: none;
+        visibility: collapse;
+    }
+}
+
+@media all and (max-width: 460px) {
+    td.dimiOpt, th.dimiOpt{
+        display: none;
+        visibility: collapse;
+    }
+}
+
+
+</style>
+
+<table class="dimiTable">
+<thead>
+  <tr>
+    <th>#</th>
+    <th>Deck</th>
+    <th>Play Rate%</th>
+    <th>Win Rate%</th>
+    <th class="dimiOpt">[Lower, Upper]</th>
+    <th># Matches</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>1</td>
+    <td>Rakdos Vampires</td>
+    <td>13.36</td>
+    <td>52.36</td>
+    <td class="dimiOpt">[49.04%, 55.66%]</td>
+    <td>869</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Slickshot Show-Off</td>
+    <td>12.95</td>
+    <td>50.79</td>
+    <td class="dimiOpt">[47.38%, 54.2%]</td>
+    <td>821</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Izzet Phoenix</td>
+    <td>12.95</td>
+    <td>47.94</td>
+    <td class="dimiOpt">[44.54%, 51.35%]</td>
+    <td>824</td>
+  </tr>
+</tbody>
+</table>

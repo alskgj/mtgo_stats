@@ -217,6 +217,7 @@ def universal_classifier() -> Classifier:
         ]),
         SimpleRule('UB Archfiend', ['Archfiend of the Dross', 'Metamorphic Alteration']),
         SimpleRule('Green Creature Ramp', ['Castle Garenbrig']),
+        SimpleRule('Green Creature Ramp', ['Cavalier of Thorns', 'Elvish Mystic', 'Llanowar Elves']),
         SimpleRule('Gruul Ramp', [
             'Escape to the Wilds', 'Wolfwillow Haven', 'Radha, Heart of Keld', 'World Breaker'
         ]),
@@ -255,4 +256,11 @@ def universal_classifier() -> Classifier:
         SimpleRule('Collected Company', ['Collected Company']),
         SimpleRule('Triskaidekaphile', ['Triskaidekaphile']),
         SimpleRule('Metalwork Colossus', ['Metalwork Colossus']),
+        SimpleRule('Training Grounds Proft', ['Training Grounds', "Proft's Eidetic Memory"]),
+        SimpleRule('Collector\'s Cage', ["Collector's Cage"]),
+        SimpleRule('Soulflayer', ['Soulflayer']),
+        SimpleRule('MonoB Control', ['Thoughtseize', 'Liliana of the Veil', 'Invoke Despair']),
+        SimpleRule('Portal to Phyrexia', ['Portal to Phyrexia']),
+        SimpleRule('The Book of Exalted Deeds', ['The Book of Exalted Deeds']),
+        SimpleRule('Jace & Valki', ['Valki, God of Lies', 'Jace Reawakened']),
     ])
