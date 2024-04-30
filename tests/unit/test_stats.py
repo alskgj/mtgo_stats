@@ -35,12 +35,39 @@ def test_html_table():
     expected = """
 <style>
 .dimiTable {
-    width: 70%;
-    border: 2px solid black;
+  width: 100%;
+  font-size: 18px;
+  border: 2px solid black;
 }
+
 .dimiTable th {
   border: 2px solid black;
-  background-color: #DDD;
+  background-color: #f1c147;
+}
+
+/* tablets and smaller -> hide confidence interval + matches */
+@media all and (max-width: 800px) {
+
+  td.dimiOpt,
+  th.dimiOpt {
+    display: none;
+    visibility: collapse;
+  }
+}
+
+/* small devices */
+@media all and (max-width: 500px) {
+  .dimiTable {
+    font-size: 12px;
+
+  }
+}
+
+/* tiny devices */
+@media all and (max-width: 300px) {
+  .dimiTable {
+    font-size: 10px;
+  }
 }
 </style>
 <table class="dimiTable">
@@ -50,8 +77,8 @@ def test_html_table():
     <th>Deck</th>
     <th>Play Rate%</th>
     <th>Win Rate%</th>
-    <th>[Lower, Upper]</th>
-    <th># Matches</th>
+    <th class="dimiOpt">[Lower, Upper]</th>
+    <th class="dimiOpt"># Matches</th>
   </tr>
 </thead>
 <tbody>
@@ -60,16 +87,16 @@ def test_html_table():
     <td>Izzet Phoenix</td>
     <td>9.1</td>
     <td>47.94</td>
-    <td>[44.54%, 51.35%]</td>
-    <td>800</td>
+    <td class="dimiOpt">[44.54%, 51.35%]</td>
+    <td class="dimiOpt">800</td>
   </tr>
   <tr>
     <td>2</td>
     <td>Spirits</td>
     <td>2.69</td>
     <td>57.6</td>
-    <td>[50.95%, 63.99%]</td>
-    <td>80</td>
+    <td class="dimiOpt">[50.95%, 63.99%]</td>
+    <td class="dimiOpt">80</td>
   </tr>
 </tbody>
 </table>

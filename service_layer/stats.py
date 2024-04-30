@@ -18,12 +18,39 @@ def get_stats(repo: AbstractRepository, max_days=14) -> List[domain.DeckStat]:
 
 HTML_STYLE_HEADER = """<style>
 .dimiTable {
-    width: 70%;
-    border: 2px solid black;
+  width: 100%;
+  font-size: 18px;
+  border: 2px solid black;
 }
+
 .dimiTable th {
   border: 2px solid black;
-  background-color: #DDD;
+  background-color: #f1c147;
+}
+
+/* tablets and smaller -> hide confidence interval + matches */
+@media all and (max-width: 800px) {
+
+  td.dimiOpt,
+  th.dimiOpt {
+    display: none;
+    visibility: collapse;
+  }
+}
+
+/* small devices */
+@media all and (max-width: 500px) {
+  .dimiTable {
+    font-size: 12px;
+
+  }
+}
+
+/* tiny devices */
+@media all and (max-width: 300px) {
+  .dimiTable {
+    font-size: 10px;
+  }
 }
 </style>
 """
@@ -44,8 +71,8 @@ def _head():
     <th>Deck</th>
     <th>Play Rate%</th>
     <th>Win Rate%</th>
-    <th>[Lower, Upper]</th>
-    <th># Matches</th>
+    <th class="dimiOpt">[Lower, Upper]</th>
+    <th class="dimiOpt"># Matches</th>
   </tr>
 </thead>
 """
@@ -57,8 +84,8 @@ def _row(n, deck: domain.DeckStat) -> str:
     <td>{deck.name}</td>
     <td>{deck.play_rate}</td>
     <td>{deck.win_rate.mean}</td>
-    <td>[{deck.win_rate.lower_bound}%, {deck.win_rate.upper_bound}%]</td>
-    <td>{deck.total_matches}</td>
+    <td class="dimiOpt">[{deck.win_rate.lower_bound}%, {deck.win_rate.upper_bound}%]</td>
+    <td class="dimiOpt">{deck.total_matches}</td>
   </tr>'''
 
 
