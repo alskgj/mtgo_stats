@@ -64,7 +64,8 @@ def stats(
         card: Annotated[List[str], typer.Option(help="Implies --deck, differentiate win rate by this card")] = None,
         max_days: int = 14,
         max_results: int = 15,
-        fmt: str = 'text'
+        fmt: str = 'text',
+        colorize: bool = False
 ):
 
     deck = DeckName(deck)
@@ -81,7 +82,7 @@ def stats(
             cards=card,
             max_days=max_days
         )[:max_results]
-        print(create_html_table(s))
+        print(create_html_table(s, colorize))
         return
 
     repo = MongoRepository(get_mongo_db())

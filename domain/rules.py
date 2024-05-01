@@ -174,7 +174,10 @@ class RakdosVampires(AbstractClassificationRule):
 
 def universal_classifier() -> Classifier:
     return Classifier([
-        SimpleRule('Slickshot Show-Off', ['Slickshot Show-Off']),
+        # SimpleRule('Slickshot Show-Off', ['Slickshot Show-Off']),
+        SimpleRule('Gruul Show-Off', ['Slickshot Show-Off', 'Questing Druid']),
+        SimpleRule('Wizard Show-Off', ['Slickshot Show-Off', "Wizard's Lightning"]),
+        SimpleRule('Boros Show-Off', ['Slickshot Show-Off', 'Defiant Strike']),
         RedAggro(),
         RakdosVampires(),
         SimpleRule('Rakdos Vampires', ['Vein Ripper', 'Sorin, Imperious Bloodlord']),

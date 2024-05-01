@@ -33,7 +33,7 @@ def test_html_table():
         total_matches=80,
         example_link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_remf'
     )
-    result = service_layer.stats.create_html_table([izzet_phoenix, spirits])
+    result = service_layer.stats.create_html_table([izzet_phoenix, spirits], colorize=False)
     expected = """
 <style>
 .dimiTable {
@@ -71,12 +71,25 @@ def test_html_table():
     font-size: 10px;
   }
 }
+
+/* Color for rows */
+.dup {
+  background-color: #91cd9a;
+}
+
+.dnormal {
+  background-color: #f3e1e4;
+}
+
+.ddown {
+  background-color: #f79c7e;
+}
 </style>
 <table class="dimiTable">
 <thead>
   <tr>
     <th>#</th>
-    <th>Deck</th>
+    <th>Archetype</th>
     <th>Play Rate%</th>
     <th>Win Rate%</th>
     <th class="dimiOpt">[Lower, Upper]</th>

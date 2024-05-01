@@ -59,6 +59,19 @@ HTML_STYLE_HEADER = """<style>
     font-size: 10px;
   }
 }
+
+/* Color for rows */
+.dup {
+  background-color: #91cd9a;
+}
+
+.dnormal {
+  background-color: #fffff7;
+}
+
+.ddown {
+  background-color: #f79c7e;
+}
 </style>
 """
 
@@ -75,7 +88,7 @@ def _head():
     return """<thead>
   <tr>
     <th>#</th>
-    <th>Deck</th>
+    <th>Archetype</th>
     <th>Play Rate%</th>
     <th>Win Rate%</th>
     <th class="dimiOpt">[Lower, Upper]</th>
@@ -86,8 +99,17 @@ def _head():
 """
 
 
-def _row(n, deck: domain.DeckStat) -> str:
-    return f'''  <tr>
+def _row(n, deck: domain.DeckStat, colorize) -> str:
+    row_tag = '  <tr>'
+    if deck.win_rate.mean > 53.0:
+        color_class = 'dup'
+    elif deck.win_rate.mean < 47.0:
+        color_class = 'ddown'
+    else:
+        color_class = 'dnormal'
+    if colorize:
+        row_tag = f'  <tr class="{color_class}">'
+    return f'''{row_tag}
     <td>{n}</td>
     <td>{deck.name}</td>
     <td>{deck.play_rate}</td>
@@ -98,6 +120,6 @@ def _row(n, deck: domain.DeckStat) -> str:
   </tr>'''
 
 
-def create_html_table(stats: List[domain.DeckStat]) -> str:
-    rows = "\n".join([_row(i+1, stat) for i, stat in enumerate(stats)])
+def create_html_table(stats: List[domain.DeckStat], colorize: bool) -> str:
+    rows = "\n".join([_row(i+1, stat, colorize) for i, stat in enumerate(stats)])
     return HTML_STYLE_HEADER+_table(_head()+_body(rows))
