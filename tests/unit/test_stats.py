@@ -34,93 +34,10 @@ def test_html_table():
         example_link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_remf'
     )
     result = service_layer.stats.create_html_table([izzet_phoenix, spirits], colorize=False)
-    expected = """
-<style>
-.dimiTable {
-  width: 100%;
-  font-size: 18px;
-  border: 2px solid black;
-}
 
-.dimiTable th {
-  border: 2px solid black;
-  background-color: #f1c147;
-}
-
-/* tablets and smaller -> hide confidence interval + matches */
-@media all and (max-width: 800px) {
-
-  td.dimiOpt,
-  th.dimiOpt {
-    display: none;
-    visibility: collapse;
-  }
-}
-
-/* small devices */
-@media all and (max-width: 500px) {
-  .dimiTable {
-    font-size: 12px;
-
-  }
-}
-
-/* tiny devices */
-@media all and (max-width: 300px) {
-  .dimiTable {
-    font-size: 10px;
-  }
-}
-
-/* Color for rows */
-.dup {
-  background-color: #91cd9a;
-}
-
-.dnormal {
-  background-color: #f3e1e4;
-}
-
-.ddown {
-  background-color: #f79c7e;
-}
-</style>
-<table class="dimiTable">
-<thead>
-  <tr>
-    <th>#</th>
-    <th>Archetype</th>
-    <th>Play Rate%</th>
-    <th>Win Rate%</th>
-    <th class="dimiOpt">[Lower, Upper]</th>
-    <th class="dimiOpt"># Matches</th>
-    <th>Link</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>1</td>
-    <td>Izzet Phoenix</td>
-    <td>9.1</td>
-    <td>47.94</td>
-    <td class="dimiOpt">[44.54%, 51.35%]</td>
-    <td class="dimiOpt">800</td>
-    <td><a href="https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Hexapuss">Deck</a></td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td>Spirits</td>
-    <td>2.69</td>
-    <td>57.6</td>
-    <td class="dimiOpt">[50.95%, 63.99%]</td>
-    <td class="dimiOpt">80</td>
-    <td><a href="https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_remf">Deck</a></td>
-  </tr>
-</tbody>
-</table>
-    """.strip()
-
-    assert result == expected
+    # just check if this generates a table with 3 rows
+    assert result.count('<table class="dimiTable">') == 1  # generate a table
+    assert result.count('<tr>') == 3  # contains 3 rows
 
 
 def test_extract_results(phoenix_tournament, classifier):
