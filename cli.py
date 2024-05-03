@@ -23,6 +23,8 @@ Deck                                   PR%    WR%    #decks
 
 """
 import logging
+import os
+import webbrowser
 from typing import Annotated, List
 
 import typer
@@ -65,7 +67,7 @@ def stats(
         max_days: int = 14,
         max_results: int = 15,
         fmt: str = 'text',
-        colorize: bool = False
+        colorize: bool = True
 ):
 
     deck = DeckName(deck)
@@ -82,8 +84,12 @@ def stats(
             cards=card,
             max_days=max_days
         )[:max_results]
-        print(create_html_table(s, colorize))
+        table = create_html_table(s, colorize)
+        with open('out.html', 'w') as f:
+            f.write(table)
+        webbrowser.open('file://'+os.path.realpath('out.html'))
         return
+
 
     repo = MongoRepository(get_mongo_db())
     tournaments = list(repo.get_tournament_ids(max_days))
