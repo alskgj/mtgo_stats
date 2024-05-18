@@ -1,3 +1,7 @@
+import typing
+
+import pydantic
+
 import domain
 import service_layer
 from domain.stats import ResultHandler
@@ -44,3 +48,19 @@ def test_extract_results(phoenix_tournament, classifier):
     result = stats.extract_results([phoenix_tournament], classifier)
     expected = f'{phoenix_tournament.link}#deck_{phoenix_tournament.players[0].name}'
     assert expected == result[0].link
+
+
+
+
+def test_analyze(izzet_phoenix_result):
+    """
+    One Izzet Phoenix player went 3-0 with Lightning Axe, Izzet Phoenix,
+    one izzet Phoenix player went 1-1 with Fiery Impulse, Izzet Phoenix
+
+    --> analysis ranks:
+    100% WR: Lightning Axe, Sample Size: 3 Matches, 60% PR
+    80% WR: Izzet Phoenix, Sample Size: 5 Matches, 100% PR
+    50% WR: Fiery Impulse, Sample Size 2 Matches, 40% PR
+    """
+    results = [izzet_phoenix_result]
+    stats.analyze_deck(domain.DeckName('Izzet Phoenix'), results)
