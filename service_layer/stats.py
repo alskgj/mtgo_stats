@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+import pydantic
+
 import domain
 from adapters.repository import AbstractRepository
 from domain import rules, DeckName
@@ -19,7 +21,6 @@ def get_stats(
     if deck:
         rh.split_deck_by_cards(deck, cards)
 
-    # display stats
     return rh.fetch_stats()
 
 
@@ -101,9 +102,9 @@ def _head():
 
 def _row(n, deck: domain.DeckStat, colorize) -> str:
     row_tag = '  <tr>'
-    if deck.win_rate.mean > 53.0:
+    if deck.win_rate.lower_bound > 50.0:
         color_class = 'dup'
-    elif deck.win_rate.mean < 47.0:
+    elif deck.win_rate.upper_bound < 50.0:
         color_class = 'ddown'
     else:
         color_class = 'dnormal'
@@ -123,3 +124,67 @@ def _row(n, deck: domain.DeckStat, colorize) -> str:
 def create_html_table(stats: List[domain.DeckStat], colorize: bool) -> str:
     rows = "\n".join([_row(i+1, stat, colorize) for i, stat in enumerate(stats)])
     return HTML_STYLE_HEADER+_table(_head()+_body(rows))
+
+
+def analyze_deck(deck: DeckName, results: List[domain.Result]) -> domain.DeckAnalysis:
+    """
+    Analyzes the results of particular deck. For ech card combination played, it tells you how well that
+    combination did.
+    """
+    answer = domain.DeckAnalysis(name=deck, total_wins=0, total_losses=0, cards={})
+
+    highest_wr = 3
+    for result in results:
+        if result.deck_name != deck:
+            continue
+
+        if result.wins > highest_wr:
+            highest_wr = result.wins
+            print(f'found new highest wins: {result.wins}, {result.link}')
+        answer.total_wins += result.wins
+        answer.total_losses += result.losses
+        answer.update_cards(result)
+
+    return answer
+
+
+class Choice(pydantic.BaseModel):
+    name: str  # 4x Arclight Phoenix
+    win_rate: float  # 49.17 (in percent)
+    match_percentage: float  # 80.0 (in percent)
+    link: str
+
+    def __str__(self):
+        return f'{self.name:40}| {self.win_rate:<10}| {self.match_percentage:<10}| {self.link}'
+
+
+def display_deck_analysis(analysis: domain.DeckAnalysis):
+    """
+    Izzet Phoenix, Average Winrate is 49.38%, Loaded 800 Matches
+
+    Card Choice | Win Rate | % of Matches
+    =====================================
+    4x Arclight Phoenix | 49.38% | 100%
+    1x Prismari Command | 50%    | 30%
+
+
+    """
+    deck_wr = round(analysis.total_wins / (analysis.total_losses+analysis.total_wins)*100, 2)
+    deck_matches = analysis.total_wins+analysis.total_losses
+    title = f'{analysis.name} had an average winrate of {deck_wr}. Loaded {deck_matches} matches.'
+    print(title)
+    print()
+    print(f'{"Card Choice":40}| {"Win Rate":<10}| % of Matches')
+
+    choices: list[Choice] = []
+
+    for card, item in analysis.cards.items():
+        card_choice = f'{card[0]}x {card[1]}'
+        wr = round(item.total_wins/(item.total_wins+item.total_losses)*100, 2)
+        match_percentage = round((item.total_wins+item.total_losses)/deck_matches*100, 2)
+        choices.append(Choice(name=card_choice, win_rate=wr, match_percentage=match_percentage, link=item.example_link))
+
+    choices.sort(key=lambda x: x.win_rate, reverse=True)
+    for choice in choices:
+        if choice.match_percentage >= 30:
+            print(choice)

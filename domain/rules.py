@@ -142,7 +142,6 @@ class MemeDeck(AbstractClassificationRule):
         )
 
 
-
 class SimpleRule(AbstractClassificationRule):
     def __init__(self, name: str, key_cards: List[str]):
         self.name = name
@@ -156,30 +155,13 @@ class SimpleRule(AbstractClassificationRule):
         return DeckName(self.name)
 
 
-class RakdosVampires(AbstractClassificationRule):
-
-    _name = DeckName('Rakdos Vampires')
-
-    @property
-    def deck_name(self) -> DeckName:
-        return self._name
-
-    def satisfied_by(self, deck: Deck):
-        if not (deck.contains_at_least_three('Vein Ripper') and
-                deck.contains_at_least_three('Sorin, Imperious Bloodlord')):
-            return False
-        self._name = DeckName(f'Rakdos Vampires')
-        return True
-
-
 def universal_classifier() -> Classifier:
     return Classifier([
         # SimpleRule('Slickshot Show-Off', ['Slickshot Show-Off']),
         SimpleRule('Gruul Show-Off', ['Slickshot Show-Off', 'Questing Druid']),
         SimpleRule('Wizard Show-Off', ['Slickshot Show-Off', "Wizard's Lightning"]),
-        SimpleRule('Boros Show-Off', ['Slickshot Show-Off', 'Defiant Strike']),
+        SimpleRule('Boros Show-Off', ['Slickshot Show-Off', 'Sacred Foundry']),
         RedAggro(),
-        RakdosVampires(),
         SimpleRule('Rakdos Vampires', ['Vein Ripper', 'Sorin, Imperious Bloodlord']),
         SimpleRule('Izzet Phoenix', ['Arclight Phoenix', 'Fiery Impulse']),
         SimpleRule('Izzet Phoenix', ['Arclight Phoenix', 'Lightning Axe']),
@@ -252,6 +234,7 @@ def universal_classifier() -> Classifier:
         SimpleRule('Bard Class', ['Bard Class']),
         SimpleRule('Rakdos Legacy', ['Fable of the Mirror-Breaker', 'Graveyard Trespasser']),
         SimpleRule('Gruul Aggro', ['The Huntsman\'s Redemption', 'Kumano Faces Kakkazan']),
+        SimpleRule('Gruul Aggro', ['Burning-Tree Emissary', 'Gleeful Demolition', 'Reckless Bushwhacker']),
         SimpleRule('Leyline of the Guildpact', ['Leyline of the Guildpact']),
         SimpleRule('Reenact the Crime', ['Reenact the Crime']),
         SimpleRule('Coveted Falcon', ['Coveted Falcon']),
@@ -266,4 +249,12 @@ def universal_classifier() -> Classifier:
         SimpleRule('Portal to Phyrexia', ['Portal to Phyrexia']),
         SimpleRule('The Book of Exalted Deeds', ['The Book of Exalted Deeds']),
         SimpleRule('Jace & Valki', ['Valki, God of Lies', 'Jace Reawakened']),
+        SimpleRule('Ghired, Mirror of the Wilds', ['Ghired, Mirror of the Wilds']),
+        SimpleRule('Slogurk Combo', ['Slogurk, the Overslime']),
+        SimpleRule('Vannifar Combo', ['Prime Speaker Vannifar']),
+        SimpleRule('Beseech the Mirror', ['Beseech the Mirror']),
+        SimpleRule('Corpses of the Lost', ['Corpses of the Lost']),
+        SimpleRule('Red Aggro', ['Eidolon of the Great Revel', 'Kumano Faces Kakkazan']),
+        SimpleRule('White Cats', ['Regal Caracal', 'Kutzil\'s Flanker']),
+
     ])

@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 from enum import Enum
 
@@ -62,6 +63,26 @@ class Deck(BaseModel):
     @property
     def maindeck_creatures(self) -> int:
         return sum(card.quantity for card in self.main if card.type == CardType.creature)
+
+    @property
+    def combined(self) -> List[Card]:
+        """Combines main and sideboard. If a card is 2 times in the main and once
+        in the sb, then combined will show it once, with quantity==3"""
+        result = []
+        mb_card_names = [card.name for card in self.main]
+        sb_card_names = [card.name for card in self.side]
+
+        for card in self.main:
+            if card.name in sb_card_names:
+                card.quantity = card.quantity + [c for c in self.side if c.name == card.name][0].quantity
+            result.append(card)
+
+        for card in self.side:
+            if card.name in mb_card_names:
+                continue
+            result.append(card)
+        return result
+
 
     def __str__(self):
         creatures = [card for card in self.main if card.type == CardType.creature]
@@ -143,3 +164,28 @@ class Classifier:
             if rule.satisfied_by(deck):
                 return rule.deck_name
         return DeckName('Unclassified Deck')
+
+
+class CardAnalysis(BaseModel):
+    name: str
+    total_wins: int
+    total_losses: int
+    example_link: str
+
+
+class DeckAnalysis(BaseModel):
+    name: DeckName
+    total_wins: int
+    total_losses: int
+    cards: typing.Dict[typing.Tuple[int, str], CardAnalysis]
+
+    def update_cards(self, result: Result):
+        combined = result.deck.combined
+        for card in combined:
+            key = (card.quantity, card.name)
+            if key not in self.cards:
+                self.cards[key] = CardAnalysis(name=card.name, total_wins=0, total_losses=0, example_link=result.link)
+
+            self.cards[key].total_wins += result.wins
+            self.cards[key].total_losses += result.losses
+            self.cards[key].example_link = result.link

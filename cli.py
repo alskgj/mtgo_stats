@@ -35,9 +35,9 @@ from domain import rules
 from domain.model import DeckName
 from domain.stats import ResultHandler, extract_results
 from service_layer.services import cache_tournaments, get_mongo_db, find_unclassified_decks
-from service_layer.stats import get_stats, create_html_table
+from service_layer.stats import get_stats, create_html_table, analyze_deck, display_deck_analysis
 
-app = typer.Typer()
+app = typer.Typer(pretty_exceptions_enable=False)
 
 
 @app.command()
@@ -53,9 +53,9 @@ def fetch(months: int = 1):
 
 
 @app.command()
-def unclassified():
+def unclassified(max_days: int = 7):
     repo = MongoRepository(get_mongo_db())
-    tournaments = list(repo.get_tournament_ids())
+    tournaments = list(repo.get_tournament_ids(max_days))
     all_tournaments = [repo.get(t) for t in tournaments]
     find_unclassified_decks(all_tournaments, rules.universal_classifier())
 
@@ -76,22 +76,16 @@ def stats(
         return
     if card is None:
         card = []
+    repo = MongoRepository(get_mongo_db())
 
     if fmt == 'html':
-        s = get_stats(
-            MongoRepository(get_mongo_db()),
-            deck=deck,
-            cards=card,
-            max_days=max_days
-        )[:max_results]
+        s = get_stats(repo, deck, cards=card, max_days=max_days)[:max_results]
         table = create_html_table(s, colorize)
         with open('out.html', 'w') as f:
             f.write(table)
         webbrowser.open('file://'+os.path.realpath('out.html'))
         return
 
-
-    repo = MongoRepository(get_mongo_db())
     tournaments = list(repo.get_tournament_ids(max_days))
     all_tournaments = [repo.get(t) for t in tournaments]
     results = extract_results(all_tournaments, rules.universal_classifier())
@@ -104,6 +98,19 @@ def stats(
     # display stats
     print(f'Displaying Stats for the last {max_results} days')
     rh.show_stats(max_results=max_results)
+
+
+@app.command()
+def analyze(
+        deck: Annotated[str, typer.Option(help="Stats for a specific deck, e.g. 'Izzet Phoenix'")],
+        max_days: int = 14,
+):
+    repo = MongoRepository(get_mongo_db())
+    tournaments = list(repo.get_tournament_ids(max_days))
+    all_tournaments = [repo.get(t) for t in tournaments]
+    results = extract_results(all_tournaments, rules.universal_classifier())
+    data = analyze_deck(DeckName(deck), results)
+    display_deck_analysis(data)
 
 
 def main():

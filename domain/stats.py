@@ -103,7 +103,7 @@ class ResultHandler:
                 win_rate=self.calculate_win_rate(decks[deck]),
                 play_rate=self.calculate_play_rate(deck),
                 total_matches=sum([d.wins+d.losses for d in decks[deck]]),
-                example_link=max(decks[deck], key=lambda e: e.date).link
+                example_link=max(decks[deck], key=lambda e: e.wins).link
             ))
 
         return deck_stats
