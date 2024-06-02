@@ -13,14 +13,15 @@ def get_mongo_db() -> pymongo.database.Database:
     return client.get_database('mtgo-stats-dev')
 
 
-def cache_tournaments(api: AbstractAPI, repo: AbstractRepository):
-    cached_tournaments = repo.list_cached_tournaments()
-
-    for tournament_link in api.list_tournament_links():
-        if tournament_link not in cached_tournaments:
-            tournament = api.fetch_tournament(tournament_link)
-            logging.info(f'adding tournament to cache: {tournament.description}-{tournament.id}')
-            repo.add(tournament, tournament_link)
+def cache_tournaments(api: AbstractAPI, repo: AbstractRepository, months=1):
+    cached_tournaments = set(repo.list_cached_tournaments())
+    available_tournaments = set(api.list_tournament_links(months))
+    uncached_tournaments = available_tournaments - cached_tournaments
+    logging.info(f'Caching {len(uncached_tournaments)} new tournaments...')
+    for tournament_link in uncached_tournaments:
+        tournament = api.fetch_tournament(tournament_link)
+        logging.info(f'adding tournament to cache: {tournament.description}-{tournament.id}')
+        repo.add(tournament, tournament_link)
 
 
 def print_deck_summary(deck: Deck):

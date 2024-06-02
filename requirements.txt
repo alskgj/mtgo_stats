@@ -3,9 +3,10 @@ requests
 beautifulsoup4
 pytest
 pymongo
-numpy
-scipy
 typer
 fastapi
 uvicorn
 httpx
+
+numpy
+starlette

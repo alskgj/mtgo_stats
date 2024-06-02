@@ -43,13 +43,9 @@ app = typer.Typer(pretty_exceptions_enable=False)
 @app.command()
 def fetch(months: int = 1):
 
-    # todo implement
-    if months != 1:
-        raise NotImplementedError
-
     repo = MongoRepository(get_mongo_db())
     api = MtgoAPI()
-    cache_tournaments(api, repo)
+    cache_tournaments(api, repo, months)
 
 
 @app.command()
@@ -79,7 +75,9 @@ def stats(
     repo = MongoRepository(get_mongo_db())
 
     if fmt == 'html':
-        s = get_stats(repo, deck, cards=card, max_days=max_days)[:max_results]
+        s = get_stats(repo, deck, cards=card, max_days=max_days)[:max_results+5]
+        total_pr = sum([deckstat.play_rate for deckstat in s])
+        print(f'results account for {total_pr}% of the field')
         table = create_html_table(s, colorize)
         with open('out.html', 'w') as f:
             f.write(table)

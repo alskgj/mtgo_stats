@@ -21,7 +21,7 @@ class FakeAPI(adapters.mtgo_api.AbstractAPI):
     def fetch_tournament(self, tournament_link: str) -> domain.Tournament:
         return self._tournaments.get(tournament_link)
 
-    def list_tournament_links(self) -> List[str]:
+    def list_tournament_links(self, months=1) -> List[str]:
         return list(self._tournaments.keys())
 
     def register_tournament(self, link: str, tournament: domain.Tournament):
