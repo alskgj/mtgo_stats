@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 
 import fastapi
@@ -10,6 +11,16 @@ from cli import fetch
 from routers import stats
 from service_layer.services import get_mongo_db
 from service_layer.stats import get_stats, create_html_table
+
+
+def setup_logging():
+    logger = logging.getLogger(__name__)
+
+    logging.getLogger('pymongo').setLevel(logging.WARNING)
+    logging.basicConfig(level=logging.INFO)
+
+    logger.info('wow')
+    return logger
 
 
 async def generate_html_out():
@@ -26,6 +37,7 @@ async def generate_html_out():
 
 async def periodically_create_html():
     while True:
+        logger.info('Generating new static page...')
         await generate_html_out()
         await asyncio.sleep(300)
 
@@ -34,9 +46,8 @@ async def periodically_create_html():
 async def lifespan(app_: fastapi.FastAPI):
     # Load the ML model
     task = asyncio.create_task(periodically_create_html())
-    print(task)
     yield
-    print(task)
+    task.cancel()
 
 app = fastapi.FastAPI(lifespan=lifespan)
 app.include_router(stats.router)
@@ -45,7 +56,6 @@ app.include_router(stats.router)
 @app.get("/")
 async def root():
     return FileResponse('out.html')
-    # return fastapi.responses.RedirectResponse(url='/docs')
 
 
 def main():
@@ -53,4 +63,5 @@ def main():
 
 
 if __name__ == '__main__':
+    logger = setup_logging()
     main()

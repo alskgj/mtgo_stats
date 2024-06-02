@@ -26,20 +26,19 @@ class MtgoAPI(AbstractAPI):
     base_url = 'https://www.mtgo.com'
 
     def list_tournament_links(self, months=1) -> List[str]:
-        # todo - handle months? to get all march deck lists fetch https://www.mtgo.com/decklists/2024/03
-
         tournaments = []
-        # get current year and month, count down
+
         today = datetime.now()
         year, month = today.year, today.month
         for i in range(months):
+            url = f'{self.base_url}/decklists/{year}/{month:02}'
+            logging.debug(f'Fetching tournaments for {month}/{year}')
+            tournaments += self.fetch_tournament_link_page(url)
             if month >= 1:
                 month -= 1
             else:
                 month = 12
                 year -= 1
-            url = f'{self.base_url}/decklists/{year}/{month:02}'
-            tournaments += self.fetch_tournament_link_page(url)
 
         logging.info(f'Found {len(tournaments)} pioneer tournaments.')
         return tournaments
@@ -49,12 +48,12 @@ class MtgoAPI(AbstractAPI):
         data = requests.get(url).text
         soup = BeautifulSoup(data, features='html.parser')
         links = [decklist.get('href') for decklist in soup.find_all(class_='decklists-link')]
-        tournaments = [self.base_url + l for l in links if 'pioneer' in l and 'league' not in l]
-        logging.info(f'Found {len(tournaments)} tournaments on {url}')
+        tournaments = [self.base_url + link for link in links if 'pioneer' in link and 'league' not in link]
+        logging.debug(f'Found {len(tournaments)} tournaments on {url}')
         return tournaments
 
     def fetch_tournament(self, tournament_link: str) -> model.Tournament:
-        logging.info(f'Fetching new tournament: {tournament_link}.')
+        logging.debug(f'Fetching new tournament: {tournament_link}.')
         r = requests.get(tournament_link)
         url = None
         for line in r.text.split('\n'):
