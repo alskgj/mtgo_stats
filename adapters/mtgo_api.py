@@ -14,7 +14,7 @@ from domain.model import TournamentParticipant, Deck, Card, CardType, Color
 class AbstractAPI(abc.ABC):
 
     @abc.abstractmethod
-    def list_tournament_links(self) -> List[str]:
+    def list_tournament_links(self, months) -> List[str]:
         ...
 
     @abc.abstractmethod
@@ -25,13 +25,32 @@ class AbstractAPI(abc.ABC):
 class MtgoAPI(AbstractAPI):
     base_url = 'https://www.mtgo.com'
 
-    def list_tournament_links(self) -> List[str]:
+    def list_tournament_links(self, months=1) -> List[str]:
         # todo - handle months? to get all march deck lists fetch https://www.mtgo.com/decklists/2024/03
-        data = requests.get(self.base_url+'/decklists').text
+
+        tournaments = []
+        # get current year and month, count down
+        today = datetime.now()
+        year, month = today.year, today.month
+        for i in range(months):
+            if month >= 1:
+                month -= 1
+            else:
+                month = 12
+                year -= 1
+            url = f'{self.base_url}/decklists/{year}/{month:02}'
+            tournaments += self.fetch_tournament_link_page(url)
+
+        logging.info(f'Found {len(tournaments)} pioneer tournaments.')
+        return tournaments
+
+    def fetch_tournament_link_page(self, url: str) -> List[str]:
+        """Parses an url like https://www.mtgo.com/decklists/2024/05"""
+        data = requests.get(url).text
         soup = BeautifulSoup(data, features='html.parser')
         links = [decklist.get('href') for decklist in soup.find_all(class_='decklists-link')]
         tournaments = [self.base_url + l for l in links if 'pioneer' in l and 'league' not in l]
-        logging.info(f'Found {len(tournaments)} pioneer tournaments.')
+        logging.info(f'Found {len(tournaments)} tournaments on {url}')
         return tournaments
 
     def fetch_tournament(self, tournament_link: str) -> model.Tournament:
@@ -48,10 +67,13 @@ class MtgoAPI(AbstractAPI):
 
     def parse_tournament(self, data: dict, link) -> model.Tournament:
         inner = data['tournament_cover_page_list'][0]
+        date = inner['starttime']
+        if ' ' in date:
+            date = date.split(' ')[0]
         return model.Tournament(
             id=inner['event_id'],
             description=inner['description'],
-            start_time=datetime.fromisoformat(inner['starttime']),
+            start_time=datetime.fromisoformat(date),
             format='pioneer' if inner['format'] == 'CPIONEER' else inner['format'],
             players=parse_players(inner),
             link=link
