@@ -1,9 +1,11 @@
-FROM python:3.12-slim
+FROM python:3.12-alpine
 
-ADD requirements.txt .
+WORKDIR /code/app
 
-RUN pip install -r requirements.txt
+COPY ./requirements.txt /code/requirements.txt
 
-ADD . .
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-CMD ["python", "./cli.py", "fetch"]
+COPY . /code/app
+
+CMD ["uvicorn", "rest:app", "--host", "0.0.0.0", "--port", "80"]

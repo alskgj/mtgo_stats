@@ -7,3 +7,6 @@ typer
 fastapi
 uvicorn
 httpx
+
+numpy
+starlette
