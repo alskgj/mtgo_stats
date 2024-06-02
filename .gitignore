@@ -4,3 +4,4 @@
 dist
 custom.env
 *.crt
+out.html

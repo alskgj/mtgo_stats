@@ -140,7 +140,6 @@ def analyze_deck(deck: DeckName, results: List[domain.Result]) -> domain.DeckAna
 
         if result.wins > highest_wr:
             highest_wr = result.wins
-            print(f'found new highest wins: {result.wins}, {result.link}')
         answer.total_wins += result.wins
         answer.total_losses += result.losses
         answer.update_cards(result)
@@ -186,5 +185,5 @@ def display_deck_analysis(analysis: domain.DeckAnalysis):
 
     choices.sort(key=lambda x: x.win_rate, reverse=True)
     for choice in choices:
-        if choice.match_percentage >= 30:
+        if choice.match_percentage >= 10:
             print(choice)
