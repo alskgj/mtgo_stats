@@ -256,5 +256,15 @@ def universal_classifier() -> Classifier:
         SimpleRule('Corpses of the Lost', ['Corpses of the Lost']),
         SimpleRule('Red Aggro', ['Eidolon of the Great Revel', 'Kumano Faces Kakkazan']),
         SimpleRule('White Cats', ['Regal Caracal', 'Kutzil\'s Flanker']),
+        SimpleRule('Aftermath Spelunking', ['Aftermath Analyst', 'Spelunking']),
+        SimpleRule('Profts Duelist', ['Duelist of the Mind', "Proft's Eidetic Memory"]),
+        SimpleRule('Freestrider Crimes', ['Freestrider Lookout']),
+        SimpleRule('Dragons', ['Orator of Ojutai', "Silumgar's Scorn"]),
+        SimpleRule('WB Midrange', ['Caustic Bronco', "Wedding Announcement"]),
+        SimpleRule('W Aggro', ['Adeline, Resplendent Cathar', "Thalia's Lieutenant"]),
+        SimpleRule('Golgari Midrange', ['Reckoner Bankbuster', "Pillage the Bog"]),
+        SimpleRule('MonoW Control', ['The Wandering Emperor', "Settle the Wreckage"]),
+        SimpleRule('Cavalcade Aggro', ['Cavalcade of Calamity']),
+        SimpleRule('Aetherworks Marvel', ['Aetherworks Marvel', 'Woodweaver\'s Puzzleknot']),
 
     ])

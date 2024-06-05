@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 
 import fastapi
@@ -26,19 +27,23 @@ def setup_logging():
 async def generate_html_out():
     repo = MongoRepository(get_mongo_db())
     # fetch new tournaments
-    fetch(months=1)
+    fetch(months=2)
 
     # generate html
-    s = get_stats(repo)
+    s = get_stats(repo, max_days=21)[:20]
     table = create_html_table(s, colorize=True)
     with open('out.html', 'w') as f:
         f.write(table)
 
 
 async def periodically_create_html():
+    await asyncio.sleep(1)  # let the web server start first, any asyncio statement here is fine
     while True:
         logger.info('Generating new static page...')
-        await generate_html_out()
+        try:
+            await generate_html_out()
+        except Exception as e:
+            logger.error(f'Error while generating static page: {e}')
         await asyncio.sleep(300)
 
 
@@ -46,7 +51,9 @@ async def periodically_create_html():
 async def lifespan(app_: fastapi.FastAPI):
     # Load the ML model
     task = asyncio.create_task(periodically_create_html())
+    logger.info('Created task to periodically generate static page.')
     yield
+    logger.warning('Stopping periodically creating static page.')
     task.cancel()
 
 app = fastapi.FastAPI(lifespan=lifespan)
@@ -62,6 +69,7 @@ def main():
     uvicorn.run(app)
 
 
+logger = setup_logging()
+
 if __name__ == '__main__':
-    logger = setup_logging()
     main()

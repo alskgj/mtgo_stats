@@ -74,10 +74,22 @@ def stats(
         card = []
     repo = MongoRepository(get_mongo_db())
 
+
     if fmt == 'html':
         s = get_stats(repo, deck, cards=card, max_days=max_days)[:max_results+5]
         total_pr = sum([deckstat.play_rate for deckstat in s])
         print(f'results account for {total_pr}% of the field')
+
+        tiers = []
+        for deckstat in s:
+            if deckstat.play_rate < 3:
+                continue
+            tiers.append((deckstat.name, deckstat.play_rate*max(1.0, deckstat.win_rate.mean-50)))
+        tiers.sort(key= lambda x: x[1], reverse=True)
+        for t in tiers:
+            print(t)
+
+
         table = create_html_table(s, colorize)
         with open('out.html', 'w') as f:
             f.write(table)
