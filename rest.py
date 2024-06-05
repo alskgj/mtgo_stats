@@ -1,15 +1,18 @@
 import asyncio
 import logging
 import os
+import traceback
 from contextlib import asynccontextmanager
 
 import fastapi
 import uvicorn
 from starlette.responses import FileResponse
 
+import adapters
 from adapters.repository import MongoRepository
 from cli import fetch
 from routers import stats
+from service_layer import services
 from service_layer.services import get_mongo_db
 from service_layer.stats import get_stats, create_html_table
 
@@ -25,9 +28,10 @@ def setup_logging():
 
 
 async def generate_html_out():
-    repo = MongoRepository(get_mongo_db())
     # fetch new tournaments
-    fetch(months=2)
+    repo = MongoRepository(get_mongo_db())
+    api = adapters.MtgoAPI()
+    await services.cache_tournaments(api, repo, months=2)
 
     # generate html
     s = get_stats(repo, max_days=21)[:20]
@@ -43,13 +47,12 @@ async def periodically_create_html():
         try:
             await generate_html_out()
         except Exception as e:
-            logger.error(f'Error while generating static page: {e}')
+            logger.error(f'Error while generating static page: {e}\n{traceback.format_exc()}')
         await asyncio.sleep(300)
 
 
 @asynccontextmanager
 async def lifespan(app_: fastapi.FastAPI):
-    # Load the ML model
     task = asyncio.create_task(periodically_create_html())
     logger.info('Created task to periodically generate static page.')
     yield
@@ -63,6 +66,17 @@ app.include_router(stats.router)
 @app.get("/")
 async def root():
     return FileResponse('out.html')
+
+
+@app.get('/fetch')
+async def cache_all_the_tournaments() -> list[str]:
+    """
+    Returns a list of newly cached tournaments, empty if no new tournaments have been cached.
+    """
+    # {start_time: {$gte: new Date('2024-06-1')}}
+    repo = MongoRepository(get_mongo_db())
+    api = adapters.MtgoAPI()
+    return await services.cache_tournaments(api, repo)
 
 
 def main():

@@ -1,4 +1,4 @@
-import logging
+import asyncio
 from typing import List
 
 import pymongo.database
@@ -24,15 +24,31 @@ def get_mongo_db() -> pymongo.database.Database:
     return client.get_database('mtgo-stats-dev')
 
 
-def cache_tournaments(api: AbstractAPI, repo: AbstractRepository, months=1):
+# todo implement async cache tournaments
+async def async_cache_tournaments(api: AbstractAPI, repo: AbstractRepository, months=1):
     cached_tournaments = set(repo.list_cached_tournaments())
     available_tournaments = set(api.list_tournament_links(months))
+
+
+async def cache_tournaments(api: AbstractAPI, repo: AbstractRepository, months=1) -> list[str]:
+    cached_tournaments = set(repo.list_cached_tournaments())
+    available_tournaments = set(await api.list_tournament_links(months))
     uncached_tournaments = available_tournaments - cached_tournaments
-    logging.info(f'Caching {len(uncached_tournaments)} new tournaments...')
-    for tournament_link in uncached_tournaments:
-        tournament = api.fetch_tournament(tournament_link)
+    logging.info(f'Caching {len(uncached_tournaments)} new tournaments')
+
+    tasks = []
+    async with asyncio.TaskGroup() as tg:
+        for tournament_link in uncached_tournaments:
+            task = tg.create_task(api.fetch_tournament(tournament_link))
+            tasks.append([task, tournament_link])
+            await asyncio.sleep(1)  # politeness
+
+    for task, tournament_link in tasks:
+        tournament = task.result()
         logging.info(f'adding tournament to cache: {tournament.description}-{tournament.id}')
         repo.add(tournament, tournament_link)
+
+    return list(uncached_tournaments)
 
 
 def print_deck_summary(deck: Deck):

@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import List
 
-import requests
+import httpx
 from bs4 import BeautifulSoup
 
 from domain import model
@@ -14,18 +14,18 @@ from domain.model import TournamentParticipant, Deck, Card, CardType, Color
 class AbstractAPI(abc.ABC):
 
     @abc.abstractmethod
-    def list_tournament_links(self, months) -> List[str]:
+    async def list_tournament_links(self, months) -> List[str]:
         ...
 
     @abc.abstractmethod
-    def fetch_tournament(self, tournament_link: str) -> model.Tournament:
+    async def fetch_tournament(self, tournament_link: str) -> model.Tournament:
         ...
 
 
 class MtgoAPI(AbstractAPI):
     base_url = 'https://www.mtgo.com'
 
-    def list_tournament_links(self, months=1) -> List[str]:
+    async def list_tournament_links(self, months=1) -> List[str]:
         tournaments = []
 
         today = datetime.now()
@@ -33,7 +33,7 @@ class MtgoAPI(AbstractAPI):
         for i in range(months):
             url = f'{self.base_url}/decklists/{year}/{month:02}'
             logging.debug(f'Fetching tournaments for {month}/{year}')
-            tournaments += self.fetch_tournament_link_page(url)
+            tournaments += await self._fetch_tournament_link_page(url)
             if month >= 1:
                 month -= 1
             else:
@@ -43,40 +43,46 @@ class MtgoAPI(AbstractAPI):
         logging.info(f'Found {len(tournaments)} pioneer tournaments.')
         return tournaments
 
-    def fetch_tournament_link_page(self, url: str) -> List[str]:
+    async def _fetch_tournament_link_page(self, url: str) -> List[str]:
         """Parses an url like https://www.mtgo.com/decklists/2024/05"""
-        data = requests.get(url).text
+        async with httpx.AsyncClient() as client:
+            r = await client.get(url)
+        data = r.text
         soup = BeautifulSoup(data, features='html.parser')
         links = [decklist.get('href') for decklist in soup.find_all(class_='decklists-link')]
         tournaments = [self.base_url + link for link in links if 'pioneer' in link and 'league' not in link]
         logging.debug(f'Found {len(tournaments)} tournaments on {url}')
         return tournaments
 
-    def fetch_tournament(self, tournament_link: str) -> model.Tournament:
+    async def fetch_tournament(self, tournament_link: str) -> model.Tournament:
         logging.debug(f'Fetching new tournament: {tournament_link}.')
-        r = requests.get(tournament_link)
+        async with httpx.AsyncClient() as client:
+            r = await client.get(tournament_link)
         url = None
         for line in r.text.split('\n'):
             if 'window.MTGO.decklists.query' in line:
                 url = 'https://census.daybreakgames.com/' + line.strip().split(' = ')[1].strip("'").strip("';")
         if url is None:
             raise NotImplementedError
-        else:
-            return self.parse_tournament(requests.get(url).json(), url)
 
-    def parse_tournament(self, data: dict, link) -> model.Tournament:
-        inner = data['tournament_cover_page_list'][0]
-        date = inner['starttime']
-        if ' ' in date:
-            date = date.split(' ')[0]
-        return model.Tournament(
-            id=inner['event_id'],
-            description=inner['description'],
-            start_time=datetime.fromisoformat(date),
-            format='pioneer' if inner['format'] == 'CPIONEER' else inner['format'],
-            players=parse_players(inner),
-            link=link
-        )
+        async with httpx.AsyncClient(timeout=60, transport=httpx.AsyncHTTPTransport(retries=3)) as client:
+            r = await client.get(url)
+        return parse_tournament(r.json(), url)
+
+
+def parse_tournament(data: dict, link) -> model.Tournament:
+    inner = data['tournament_cover_page_list'][0]
+    date = inner['starttime']
+    if ' ' in date:
+        date = date.split(' ')[0]
+    return model.Tournament(
+        id=inner['event_id'],
+        description=inner['description'],
+        start_time=datetime.fromisoformat(date),
+        format='pioneer' if inner['format'] == 'CPIONEER' else inner['format'],
+        players=parse_players(inner),
+        link=link
+    )
 
 
 def parse_players(data: dict) -> List[TournamentParticipant]:
