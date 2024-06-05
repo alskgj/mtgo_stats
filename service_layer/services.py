@@ -6,10 +6,21 @@ import pymongo.database
 from adapters.repository import AbstractRepository
 from adapters.mtgo_api import AbstractAPI
 from domain.model import Classifier, Tournament, DeckName, Deck, CardType
+import logging
+import os
+
+logger = logging.getLogger(__name__)
 
 
 def get_mongo_db() -> pymongo.database.Database:
-    client = pymongo.MongoClient('mongodb://localhost:27017')
+    connection = os.environ.get('MONGO_CONNECTION')
+    if not connection:
+        logger.info(f'Connecting to MongoDB using default credentials on localhost')
+        client = pymongo.MongoClient('mongodb://localhost:27017')
+    else:
+        logger.info(f'Connecting to MongoDB using {connection}')
+        client = pymongo.MongoClient(connection)
+
     return client.get_database('mtgo-stats-dev')
 
 

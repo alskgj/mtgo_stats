@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 
 import fastapi
@@ -29,13 +30,14 @@ async def generate_html_out():
     fetch(months=2)
 
     # generate html
-    s = get_stats(repo)[:20]
+    s = get_stats(repo, max_days=21)[:20]
     table = create_html_table(s, colorize=True)
     with open('out.html', 'w') as f:
         f.write(table)
 
 
 async def periodically_create_html():
+    await asyncio.sleep(1)  # let the web server start first, any asyncio statement here is fine
     while True:
         logger.info('Generating new static page...')
         try:
