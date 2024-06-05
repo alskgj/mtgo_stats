@@ -163,7 +163,7 @@ class Classifier:
         for rule in self.rules:
             if rule.satisfied_by(deck):
                 return rule.deck_name
-        return DeckName('Unclassified Deck')
+        return DeckName('Unclassified Decks')
 
 
 class CardAnalysis(BaseModel):

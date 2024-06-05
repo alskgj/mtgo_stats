@@ -37,7 +37,7 @@ def find_unclassified_decks(tournaments: List[Tournament], classifier: Classifie
     classified, unclassified = 0, 0
     for tournament in tournaments:
         for player in tournament.players:
-            if classifier.classify(player.deck) == DeckName('Unclassified Deck'):
+            if classifier.classify(player.deck) == DeckName('Unclassified Decks'):
                 print(f'{tournament.link}#deck_{player.name}')
                 if verbose:
                     print(player.deck)
