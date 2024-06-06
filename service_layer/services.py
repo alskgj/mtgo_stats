@@ -3,8 +3,8 @@ from typing import List
 
 import pymongo.database
 
+from adapters.mtgo.api import AbstractAPI
 from adapters.repository import AbstractRepository
-from adapters.mtgo_api import AbstractAPI
 from domain.model import Classifier, Tournament, DeckName, Deck, CardType
 import logging
 import os
@@ -27,12 +27,12 @@ def get_mongo_db() -> pymongo.database.Database:
 # todo implement async cache tournaments
 async def async_cache_tournaments(api: AbstractAPI, repo: AbstractRepository, months=1):
     cached_tournaments = set(repo.list_cached_tournaments())
-    available_tournaments = set(api.list_tournament_links(months))
+    available_tournaments = set(api.fetch_tournament_links(months))
 
 
 async def cache_tournaments(api: AbstractAPI, repo: AbstractRepository, months=1) -> list[str]:
     cached_tournaments = set(repo.list_cached_tournaments())
-    available_tournaments = set(await api.list_tournament_links(months))
+    available_tournaments = set(await api.fetch_tournament_links(months))
     uncached_tournaments = available_tournaments - cached_tournaments
     logging.info(f'Caching {len(uncached_tournaments)} new tournaments')
 

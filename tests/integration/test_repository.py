@@ -1,18 +1,19 @@
 from typing import List
 
-import pytest
-
 import pymongo
 import pymongo.database
+import pytest
 
-import adapters.mtgo_api
+import adapters.mtgo.api
 import domain
-
 from adapters.repository import MongoRepository
 from service_layer.services import cache_tournaments
 
+pytestmark = pytest.mark.slow
 
-class FakeAPI(adapters.mtgo_api.AbstractAPI):
+
+# todo: remove, replace with real api using fake client instead?
+class FakeAPI(adapters.mtgo.api.AbstractAPI):
     """ Drop in replacement for the MTGO API for testing. Use register_tournament to """
 
     def __init__(self):
@@ -21,7 +22,7 @@ class FakeAPI(adapters.mtgo_api.AbstractAPI):
     async def fetch_tournament(self, tournament_link: str) -> domain.Tournament:
         return self._tournaments.get(tournament_link)
 
-    async def list_tournament_links(self, months=1) -> List[str]:
+    async def fetch_tournament_links(self, months=1) -> List[str]:
         return list(self._tournaments.keys())
 
     def register_tournament(self, link: str, tournament: domain.Tournament):
@@ -29,7 +30,7 @@ class FakeAPI(adapters.mtgo_api.AbstractAPI):
         self._tournaments[link] = tournament
 
 
-@pytest.fixture()
+@pytest.fixture
 def repo() -> MongoRepository:
     client = pymongo.MongoClient('mongodb://localhost:27017')
     yield MongoRepository(client.get_database('test'))

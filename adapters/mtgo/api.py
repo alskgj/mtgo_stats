@@ -1,12 +1,13 @@
 import abc
+import asyncio
 import logging
 from collections import defaultdict
 from datetime import datetime
 from typing import List
 
-import httpx
 from bs4 import BeautifulSoup
 
+from adapters.mtgo.client import AbstractMtgoClient
 from domain import model
 from domain.model import TournamentParticipant, Deck, Card, CardType, Color
 
@@ -14,7 +15,12 @@ from domain.model import TournamentParticipant, Deck, Card, CardType, Color
 class AbstractAPI(abc.ABC):
 
     @abc.abstractmethod
-    async def list_tournament_links(self, months) -> List[str]:
+    def __init__(self, client: AbstractMtgoClient):
+        ...
+
+    @abc.abstractmethod
+    async def fetch_tournament_links(self, months) -> List[str]:
+        """Fetch all tournament links for the last {months}"""
         ...
 
     @abc.abstractmethod
@@ -25,49 +31,54 @@ class AbstractAPI(abc.ABC):
 class MtgoAPI(AbstractAPI):
     base_url = 'https://www.mtgo.com'
 
-    async def list_tournament_links(self, months=1) -> List[str]:
-        tournaments = []
+    def __init__(self, client: AbstractMtgoClient):
+        self.client = client
 
-        today = datetime.now()
-        year, month = today.year, today.month
+    async def fetch_tournament_links(self, months=1) -> List[str]:
+        """Fetch all tournament links for the last {months}.
+        First get tournament pages, then parse those pages for the links.
+        """
+        targets = []
+        year, month = datetime.now().year, datetime.now().month
         for i in range(months):
-            url = f'{self.base_url}/decklists/{year}/{month:02}'
-            logging.debug(f'Fetching tournaments for {month}/{year}')
-            tournaments += await self._fetch_tournament_link_page(url)
-            if month >= 1:
-                month -= 1
-            else:
-                month = 12
-                year -= 1
+            targets.append((year, month))
+            month -= 1
+            if month < 1:
+                year, month = year - 1, 12
 
-        logging.info(f'Found {len(tournaments)} pioneer tournaments.')
-        return tournaments
+        tasks = []
+        async with asyncio.TaskGroup() as tg:
+            for year, month in targets:
+                tasks.append(tg.create_task(self.client.fetch_tournaments_page(year, month)))
 
-    async def _fetch_tournament_link_page(self, url: str) -> List[str]:
-        """Parses an url like https://www.mtgo.com/decklists/2024/05"""
-        async with httpx.AsyncClient() as client:
-            r = await client.get(url)
-        data = r.text
-        soup = BeautifulSoup(data, features='html.parser')
-        links = [decklist.get('href') for decklist in soup.find_all(class_='decklists-link')]
-        tournaments = [self.base_url + link for link in links if 'pioneer' in link and 'league' not in link]
-        logging.debug(f'Found {len(tournaments)} tournaments on {url}')
-        return tournaments
+        tournament_pages = [task.result() for task in tasks]
+
+        return [link for tournament_page in tournament_pages for link in extract_links(tournament_page)]
 
     async def fetch_tournament(self, tournament_link: str) -> model.Tournament:
         logging.debug(f'Fetching new tournament: {tournament_link}.')
-        async with httpx.AsyncClient() as client:
-            r = await client.get(tournament_link)
-        url = None
-        for line in r.text.split('\n'):
-            if 'window.MTGO.decklists.query' in line:
-                url = 'https://census.daybreakgames.com/' + line.strip().split(' = ')[1].strip("'").strip("';")
-        if url is None:
-            raise NotImplementedError
 
-        async with httpx.AsyncClient(timeout=60, transport=httpx.AsyncHTTPTransport(retries=3)) as client:
-            r = await client.get(url)
-        return parse_tournament(r.json(), url)
+        data = await self.client.fetch_tournament(tournament_link)
+        url = self._extract_census_link(data)
+
+        tournament_data = await self.client.fetch_tournament_data(url)
+        return parse_tournament(tournament_data, url)
+
+    @staticmethod
+    def _extract_census_link(tournament_data: str) -> str:
+        for line in tournament_data.split('\n'):
+            if 'window.MTGO.decklists.query' in line:
+                return 'https://census.daybreakgames.com/' + line.strip().split(' = ')[1].strip("'").strip("';")
+
+        raise ValueError('Could not find census link in tournament data.')
+
+
+def extract_links(tournament_page: str) -> list[str]:
+    base = 'https://www.mtgo.com'
+    soup = BeautifulSoup(tournament_page, features='html.parser')
+    links = [decklist.get('href') for decklist in soup.find_all(class_='decklists-link')]
+    tournaments = [base + link for link in links if 'pioneer' in link and 'league' not in link]
+    return tournaments
 
 
 def parse_tournament(data: dict, link) -> model.Tournament:

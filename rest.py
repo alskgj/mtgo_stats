@@ -9,8 +9,9 @@ import uvicorn
 from starlette.responses import FileResponse
 
 import adapters
+from adapters import MtgoClient
 from adapters.repository import MongoRepository
-from cli import fetch
+from fastapi import Response
 from routers import stats
 from service_layer import services
 from service_layer.services import get_mongo_db
@@ -30,7 +31,7 @@ def setup_logging():
 async def generate_html_out():
     # fetch new tournaments
     repo = MongoRepository(get_mongo_db())
-    api = adapters.MtgoAPI()
+    api = adapters.MtgoAPI(MtgoClient())
     await services.cache_tournaments(api, repo, months=2)
 
     # generate html
@@ -65,7 +66,8 @@ app.include_router(stats.router)
 
 @app.get("/")
 async def root():
-    return FileResponse('out.html')
+    res = FileResponse('out.html', headers={'Cache-Control': 'max-age=300'})
+    return res
 
 
 @app.get('/fetch')
