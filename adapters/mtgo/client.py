@@ -28,7 +28,7 @@ class MtgoClient(AbstractMtgoClient):
         url = f'{self.base_url}/decklists/{year}/{month:02}'
 
         # todo - replace with long living client?
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=60, transport=httpx.AsyncHTTPTransport(retries=3)) as client:
             r = await client.get(url)
         return r.text
 
@@ -38,7 +38,7 @@ class MtgoClient(AbstractMtgoClient):
         and returns the whole page
         """
         # todo - replace with long living client?
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=60, transport=httpx.AsyncHTTPTransport(retries=3)) as client:
             r = await client.get(url)
         return r.text
 
