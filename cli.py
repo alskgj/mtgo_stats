@@ -29,7 +29,7 @@ from typing import Annotated, List
 
 import typer
 
-from adapters.mtgo_api import MtgoAPI
+from adapters import MtgoAPI
 from adapters.repository import MongoRepository
 from domain import rules
 from domain.model import DeckName

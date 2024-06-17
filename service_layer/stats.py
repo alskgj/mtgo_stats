@@ -121,6 +121,21 @@ def _row(n, deck: domain.DeckStat, colorize) -> str:
   </tr>'''
 
 
+def wrap_html_as_page(body: str):
+    """Helper function to get a full html page"""
+    return f"""
+    <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body>
+        {body}
+        </body>
+    </html>
+    """
+
+
 def create_html_table(stats: List[domain.DeckStat], colorize: bool) -> str:
     rows = "\n".join([_row(i+1, stat, colorize) for i, stat in enumerate(stats)])
     return HTML_STYLE_HEADER+_table(_head()+_body(rows))

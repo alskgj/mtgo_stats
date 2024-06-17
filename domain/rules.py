@@ -265,6 +265,13 @@ def universal_classifier() -> Classifier:
         SimpleRule('Golgari Midrange', ['Reckoner Bankbuster', "Pillage the Bog"]),
         SimpleRule('MonoW Control', ['The Wandering Emperor', "Settle the Wreckage"]),
         SimpleRule('Cavalcade Aggro', ['Cavalcade of Calamity']),
-        SimpleRule('Aetherworks Marvel', ['Aetherworks Marvel', 'Woodweaver\'s Puzzleknot']),
+        SimpleRule('Aetherworks Marvel', ['Aetherworks Marvel']),
+        SimpleRule('MonoB', ['Gifted Aetherborn']),
+        SimpleRule('Nine Lives', ['Nine Lives']),
+        SimpleRule('Enigma Jewel', ['The Enigma Jewel']),
+        SimpleRule('Mill', ['Fraying Sanity']),
+        SimpleRule('Edgar\'s Awakening', ['Edgar\'s Awakening']),
+        SimpleRule('Goblins', ['Hobgoblin Bandit Lord']),
+        SimpleRule('Gruul Aggro', ['Burning-Tree Emissary']),
 
     ])

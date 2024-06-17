@@ -6,6 +6,7 @@ import domain
 import service_layer
 from domain.stats import ResultHandler
 from service_layer import stats
+from service_layer.stats import get_stats
 
 
 def test_win_rate_calculations(izzet_phoenix_result, rakdos_vampires_result):
@@ -50,8 +51,6 @@ def test_extract_results(phoenix_tournament, classifier):
     assert expected == result[0].link
 
 
-
-
 def test_analyze(izzet_phoenix_result):
     """
     One Izzet Phoenix player went 3-0 with Lightning Axe, Izzet Phoenix,
@@ -64,3 +63,9 @@ def test_analyze(izzet_phoenix_result):
     """
     results = [izzet_phoenix_result]
     stats.analyze_deck(domain.DeckName('Izzet Phoenix'), results)
+
+
+def test_get_stats(repo):
+    decks = get_stats(repo, max_days=None)
+    assert 'Izzet Phoenix' in [deck.name for deck in decks]
+    assert 'Amalia Combo' in [deck.name for deck in decks]

@@ -3,6 +3,9 @@ from datetime import datetime
 import pytest
 import domain
 import domain.rules
+from adapters.repository import AbstractRepository
+from tests import fakes
+
 
 @pytest.fixture
 def rakdos_vampires() -> domain.Deck:
@@ -159,3 +162,11 @@ def classifier() -> domain.Classifier:
         domain.rules.SimpleRule('Izzet Phoenix', ['Arclight Phoenix']),
         domain.rules.SimpleRule('Rakdos Vampires', ['Vein Ripper']),
     ])
+
+
+@pytest.fixture
+def repo(medium_tournament) -> AbstractRepository:
+    fake = fakes.FakeRepository()
+    fake.add(medium_tournament, 'http://medium_tournament')
+
+    return fake
