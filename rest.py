@@ -15,7 +15,8 @@ from routers import stats
 from service_layer import services
 from service_layer.dependencies import RepoDep, MtgoDep
 from service_layer.services import get_mongo_db
-from service_layer.stats import get_stats, create_html_table
+from service_layer.stats import get_stats, create_html_table, wrap_html_as_page
+from fastapi.middleware.cors import CORSMiddleware
 
 
 def setup_logging():
@@ -36,7 +37,7 @@ async def generate_html_out():
     s = get_stats(repo, max_days=21)[:20]
     table = create_html_table(s, colorize=True)
     with open('out.html', 'w') as f:
-        f.write(table)
+        f.write(wrap_html_as_page(table))
 
 
 async def periodically_create_html():
@@ -60,6 +61,14 @@ async def lifespan(_app: fastapi.FastAPI):
 
 app = fastapi.FastAPI(lifespan=lifespan)
 app.include_router(stats.router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
