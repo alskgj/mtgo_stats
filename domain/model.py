@@ -110,6 +110,7 @@ class Result(BaseModel):
     losses: int
     date: datetime
     link: str
+    hero_cards: list[str]
 
 
 class TournamentParticipant(BaseModel):
@@ -132,6 +133,7 @@ class DeckStat(BaseModel):
     play_rate: float
     total_matches: int
     example_link: str
+    hero_cards: list[str]
 
 
 class Tournament(BaseModel):
@@ -154,6 +156,10 @@ class AbstractClassificationRule(ABC):
     def deck_name(self) -> DeckName:
         ...
 
+    @abstractmethod
+    def heroes(self):
+        ...
+
 
 class Classifier:
     def __init__(self, rules: List[AbstractClassificationRule]):
@@ -164,6 +170,12 @@ class Classifier:
             if rule.satisfied_by(deck):
                 return rule.deck_name
         return DeckName('Unclassified Decks')
+
+    def find_hero(self, deck: Deck) -> list[str]:
+        for rule in self.rules:
+            if rule.satisfied_by(deck):
+                return rule.heroes()
+        return []
 
 
 class CardAnalysis(BaseModel):

@@ -7,21 +7,10 @@ def deck_contains_at_least_three(deck: Deck, card_name: str) -> bool:
     return any([card.name == card_name and card.quantity >= 3 for card in deck.main])
 
 
-class RedAggro(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Red Aggro')
-
-    def satisfied_by(self, deck: Deck):
-        return (deck.contains_at_least_three('Monastery Swiftspear') and
-                (
-                    deck.contains_at_least(2, 'Kumano Faces Kakkazan') or
-                    deck.contains_at_least_three('Viashino Pyromancer') or
-                    deck.contains_at_least_three('Skewer the Critics')
-                ))
-
-
 class UWControl(AbstractClassificationRule):
+    def heroes(self):
+        return ["Dovin's Veto", 'No More Lies']
+
     @property
     def deck_name(self) -> DeckName:
         return DeckName('UW Control')
@@ -33,18 +22,10 @@ class UWControl(AbstractClassificationRule):
                 )
 
 
-class LotusField(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Lotus Field')
-
-    def satisfied_by(self, deck: Deck):
-        return (
-            deck.contains_at_least(4, 'Lotus Field')
-        )
-
-
 class RakdosLegacy(AbstractClassificationRule):
+    def heroes(self):
+        return ['Fable of the Mirror-Breaker', 'Bloodtithe Harvester']
+
     @property
     def deck_name(self) -> DeckName:
         return DeckName('Rakdos Legacy')
@@ -58,6 +39,9 @@ class RakdosLegacy(AbstractClassificationRule):
 
 
 class MonoBMidrange(AbstractClassificationRule):
+    def heroes(self):
+        return ['Sheoldred, the Apocalypse']
+
     @property
     def deck_name(self) -> DeckName:
         return DeckName('MonoB Midrange')
@@ -69,20 +53,10 @@ class MonoBMidrange(AbstractClassificationRule):
         )
 
 
-class IzzetTiTi(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Izzet TiTi')
-
-    def satisfied_by(self, deck: Deck):
-        return (
-            deck.contains_at_least(2, 'Thing in the Ice') and
-            deck.contains_at_least(4, 'Narset, Parter of Veils') and
-            not deck.contains_at_least(1, 'Arclight Phoenix')
-        )
-
-
 class UBControl(AbstractClassificationRule):
+    def heroes(self):
+        return ['Watery Grave']
+
     @property
     def deck_name(self) -> DeckName:
         return DeckName('UB Control')
@@ -95,6 +69,9 @@ class UBControl(AbstractClassificationRule):
 
 
 class MonoBControl(AbstractClassificationRule):
+    def heroes(self):
+        return ['Swamp']
+
     @property
     def deck_name(self) -> DeckName:
         return DeckName('MonoB Control')
@@ -107,6 +84,10 @@ class MonoBControl(AbstractClassificationRule):
 
 
 class IzzetControl(AbstractClassificationRule):
+
+    def heroes(self):
+        return ['Narset, Parter of Veils', 'Steam Vents']
+
     @property
     def deck_name(self) -> DeckName:
         return DeckName('MonoB Control')
@@ -119,16 +100,7 @@ class IzzetControl(AbstractClassificationRule):
         )
 
 
-class GolgariMidrange(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Golgari Midrange')
 
-    def satisfied_by(self, deck: Deck):
-        return (
-            deck.maindeck_creatures >= 12 and
-            deck.contains_at_least(4, 'Overgrown Tomb')
-        )
 
 
 class MemeDeck(AbstractClassificationRule):
@@ -143,6 +115,9 @@ class MemeDeck(AbstractClassificationRule):
 
 
 class SimpleRule(AbstractClassificationRule):
+    def heroes(self):
+        return self.cards
+
     def __init__(self, name: str, key_cards: List[str]):
         self.name = name
         self.cards = key_cards
@@ -157,11 +132,9 @@ class SimpleRule(AbstractClassificationRule):
 
 def universal_classifier() -> Classifier:
     return Classifier([
-        # SimpleRule('Slickshot Show-Off', ['Slickshot Show-Off']),
         SimpleRule('Gruul Show-Off', ['Slickshot Show-Off', 'Questing Druid']),
         SimpleRule('Wizard Show-Off', ['Slickshot Show-Off', "Wizard's Lightning"]),
         SimpleRule('Boros Show-Off', ['Slickshot Show-Off', 'Sacred Foundry']),
-        RedAggro(),
         SimpleRule('Rakdos Vampires', ['Vein Ripper', 'Sorin, Imperious Bloodlord']),
         SimpleRule('Izzet Phoenix', ['Arclight Phoenix', 'Fiery Impulse']),
         SimpleRule('Izzet Phoenix', ['Arclight Phoenix', 'Lightning Axe']),
@@ -170,11 +143,9 @@ def universal_classifier() -> Classifier:
         SimpleRule('Waste Not', ['Waste Not']),
         SimpleRule('Spirits', ['Supreme Phantom', 'Mausoleum Wanderer']),
         UWControl(),
-        LotusField(),
+        SimpleRule('Lotus Field', ['Lotus Field']),
         RakdosLegacy(),
         MonoBMidrange(),
-        IzzetTiTi(),
-        MemeDeck(),
         MonoBControl(),
         UBControl(),
         IzzetControl(),
@@ -212,7 +183,6 @@ def universal_classifier() -> Classifier:
         SimpleRule('Rogues', ['Soaring Thought-Thief', 'Thieves\' Guild Enforcer']),
         SimpleRule('Elder Deep-Fiend Pile', ['Elder Deep-Fiend']),
         SimpleRule('Lotleth Troll Combo', ['Lotleth Troll']),
-        GolgariMidrange(),
         SimpleRule('Boros Burn', [
             'Monastery Swiftspear', 'Boros Charm', 'Lightning Helix', 'Skewer the Critics'
         ]),

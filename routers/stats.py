@@ -2,6 +2,7 @@ import fastapi
 
 import domain
 from adapters.repository import MongoRepository
+from domain.rules import universal_classifier
 from service_layer import stats
 from service_layer.dependencies import RepoDep, MtgoDep
 from service_layer.services import get_mongo_db

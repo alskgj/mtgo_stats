@@ -29,14 +29,16 @@ def test_html_table():
         win_rate=domain.WinRate(mean=47.94, lower_bound=44.54, upper_bound=51.35),
         play_rate=9.1,
         total_matches=800,
-        example_link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Hexapuss'
+        example_link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Hexapuss',
+        hero_cards=['Arclight Phoenix']
     )
     spirits = domain.DeckStat(
         name=domain.DeckName('Spirits'),
         win_rate=domain.WinRate(mean=57.6, lower_bound=50.95, upper_bound=63.99),
         play_rate=2.69,
         total_matches=80,
-        example_link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_remf'
+        example_link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_remf',
+        hero_cards=['Mausoleum Wanderer']
     )
     result = service_layer.stats.create_html_table([izzet_phoenix, spirits], colorize=False)
 
