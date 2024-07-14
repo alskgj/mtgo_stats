@@ -12,10 +12,6 @@ class AbstractMtgoClient(abc.ABC):
     async def fetch_tournament(self, url) -> str:
         ...
 
-    @abc.abstractmethod
-    async def fetch_tournament_data(self, url) -> dict:
-        ...
-
 
 class MtgoClient(AbstractMtgoClient):
     base_url = 'https://www.mtgo.com'
@@ -41,12 +37,3 @@ class MtgoClient(AbstractMtgoClient):
         async with httpx.AsyncClient(timeout=60, transport=httpx.AsyncHTTPTransport(retries=3)) as client:
             r = await client.get(url)
         return r.text
-
-    async def fetch_tournament_data(self, url) -> dict:
-        """
-        Fetches an api url from census.daybreakgames.com and returns the resulting json
-        """
-        # todo - replace with long living client?
-        async with httpx.AsyncClient(timeout=60, transport=httpx.AsyncHTTPTransport(retries=3)) as client:
-            r = await client.get(url)
-        return r.json()

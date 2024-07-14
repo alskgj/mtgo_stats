@@ -17,26 +17,22 @@ class FakeMtgoClient(AbstractMtgoClient):
             return fo.read()
 
     async def fetch_tournament(self, url) -> str:
-        with open(TEST_DATA / 'response_tournament.html') as fo:
+        with open(TEST_DATA / 'response_tournament_challenge_64.html') as fo:
             return fo.read()
-
-    async def fetch_tournament_data(self, url) -> dict:
-        with open(TEST_DATA / 'response_tournament_data_challenge_32_census.json') as fo:
-            return json.load(fo)
 
 
 @pytest.fixture
 def tournament_data():
-    with open('unit/tournament_data.json') as fo:
+    with open(TEST_DATA / 'response_tournament_challenge_64.json') as fo:
         data = json.load(fo)
-    return data['tournament_cover_page_list'][0]
+    return data
 
 
 @pytest.fixture
 def card_data():
-    with open('unit/tournament_data.json') as fo:
+    with open(TEST_DATA / 'response_tournament_challenge_64.json') as fo:
         data = json.load(fo)
-    return data['tournament_cover_page_list'][0]['decklists'][0]['main_deck'][0]
+    return data['decklists'][0]['main_deck'][0]
 
 
 @pytest.fixture
@@ -64,4 +60,4 @@ async def test_fetch_tournament_links(mtgo_api):
 @pytest.mark.asyncio
 async def test_fetch_tournament(mtgo_api):
     tournament = await mtgo_api.fetch_tournament('fake')
-    assert len(tournament.players) == 47
+    assert len(tournament.players) == 32

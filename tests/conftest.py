@@ -78,7 +78,8 @@ def phoenix_tournament(izzet_phoenix) -> domain.Tournament:
             domain.TournamentParticipant(name='p1', rank=2, wins=0, losses=3, deck=izzet_phoenix),
         ],
         start_time=datetime.fromisoformat('2024-03-30 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703',
+        player_count=2
     )
 
 
@@ -94,7 +95,8 @@ def small_tournament(izzet_phoenix, rakdos_vampires) -> domain.Tournament:
             domain.TournamentParticipant(name='p2', rank=3, wins=0, losses=3, deck=rakdos_vampires),
         ],
         start_time=datetime.fromisoformat('2024-03-29 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703',
+        player_count=3
     )
 
 
@@ -110,7 +112,8 @@ def old_small_tournament(izzet_phoenix, rakdos_vampires) -> domain.Tournament:
             domain.TournamentParticipant(name='p2', rank=3, wins=0, losses=3, deck=rakdos_vampires),
         ],
         start_time=datetime.fromisoformat('1700-03-29 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703',
+        player_count=3
     )
 
 
@@ -128,7 +131,8 @@ def medium_tournament(izzet_phoenix, rakdos_vampires, amalia_combo) -> domain.To
             domain.TournamentParticipant(name='p5', rank=5, wins=0, losses=3, deck=rakdos_vampires),
         ],
         start_time=datetime.fromisoformat('2023-03-30 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703',
+        player_count=5
     )
 
 

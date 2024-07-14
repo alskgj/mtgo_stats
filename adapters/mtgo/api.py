@@ -1,5 +1,6 @@
 import abc
 import asyncio
+import json
 import logging
 from collections import defaultdict
 from datetime import datetime
@@ -59,16 +60,15 @@ class MtgoAPI(AbstractAPI):
         logging.debug(f'Fetching new tournament: {tournament_link}.')
 
         data = await self.client.fetch_tournament(tournament_link)
-        url = self._extract_census_link(data)
+        tournament_data = self.json_data(data)
 
-        tournament_data = await self.client.fetch_tournament_data(url)
-        return parse_tournament(tournament_data, url)
+        return parse_tournament(tournament_data, tournament_link)
 
     @staticmethod
-    def _extract_census_link(tournament_data: str) -> str:
+    def json_data(tournament_data: str) -> dict:
         for line in tournament_data.split('\n'):
-            if 'window.MTGO.decklists.query' in line:
-                return 'https://census.daybreakgames.com/' + line.strip().split(' = ')[1].strip("'").strip("';")
+            if 'window.MTGO.decklists.data' in line:
+                return json.loads(line.strip().split(' = ')[1].strip(";"))
 
         raise ValueError('Could not find census link in tournament data.')
 
@@ -82,17 +82,17 @@ def extract_links(tournament_page: str) -> list[str]:
 
 
 def parse_tournament(data: dict, link) -> model.Tournament:
-    inner = data['tournament_cover_page_list'][0]
-    date = inner['starttime']
+    date = data['starttime']
     if ' ' in date:
         date = date.split(' ')[0]
     return model.Tournament(
-        id=inner['event_id'],
-        description=inner['description'],
+        id=data['event_id'],
+        description=data['description'],
         start_time=datetime.fromisoformat(date),
-        format='pioneer' if inner['format'] == 'CPIONEER' else inner['format'],
-        players=parse_players(inner),
-        link=link
+        format='pioneer' if data['format'] == 'CPIONEER' else data['format'],
+        players=parse_players(data),
+        link=link,
+        player_count=data['player_count']['players']
     )
 
 

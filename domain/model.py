@@ -140,9 +140,10 @@ class Tournament(BaseModel):
     id: int
     description: str
     format: str
-    players: List[TournamentParticipant]
+    players: List[TournamentParticipant]  # this is capped to top 32
     start_time: datetime
     link: str
+    player_count: int
 
 
 class AbstractClassificationRule(ABC):
