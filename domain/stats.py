@@ -31,6 +31,7 @@ def extract_results(tournaments: List[Tournament], classifier: Classifier) -> Li
                 losses=player.losses,
                 date=tournament.start_time,
                 link=f'{tournament.link}#deck_{player.name}',
+                hero_cards=classifier.find_hero(player.deck)
             ))
     return result
 
@@ -55,7 +56,6 @@ class ResultHandler:
     def split_deck_by_cards(self, deck: DeckName, cards: List[str]):
         """
         Filters all results for a single, specific deck
-
 
         deck        Specifies a deck name. Removes all decks from all tournaments that
                     do not contain this string.
@@ -103,7 +103,8 @@ class ResultHandler:
                 win_rate=self.calculate_win_rate(decks[deck]),
                 play_rate=self.calculate_play_rate(deck),
                 total_matches=sum([d.wins+d.losses for d in decks[deck]]),
-                example_link=max(decks[deck], key=lambda e: e.wins).link
+                example_link=max(decks[deck], key=lambda e: e.wins).link,
+                hero_cards=decks[deck][0].hero_cards
             ))
 
         return deck_stats

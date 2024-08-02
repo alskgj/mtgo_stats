@@ -13,13 +13,14 @@ class AbstractRepository(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get(self, tournament_id: int):
+    def get(self, tournament_id: int) -> model.Tournament:
         ...
 
     @abc.abstractmethod
     def list_cached_tournaments(self) -> List[str]:
         ...
 
+    @abc.abstractmethod
     def get_tournament_ids(self, max_days=None) -> Set[int]:
         ...
 

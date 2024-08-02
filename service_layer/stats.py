@@ -121,6 +121,21 @@ def _row(n, deck: domain.DeckStat, colorize) -> str:
   </tr>'''
 
 
+def wrap_html_as_page(body: str):
+    """Helper function to get a full html page"""
+    return f"""
+    <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body>
+        {body}
+        </body>
+    </html>
+    """
+
+
 def create_html_table(stats: List[domain.DeckStat], colorize: bool) -> str:
     rows = "\n".join([_row(i+1, stat, colorize) for i, stat in enumerate(stats)])
     return HTML_STYLE_HEADER+_table(_head()+_body(rows))
@@ -187,3 +202,11 @@ def display_deck_analysis(analysis: domain.DeckAnalysis):
     for choice in choices:
         if choice.match_percentage >= 10:
             print(choice)
+
+
+def calculate_competition_score(repo: AbstractRepository, max_days=21) -> domain.CompetitionScoreListing:
+    tournament_ids = repo.get_tournament_ids(max_days)
+    raw_tournaments = [repo.get(id_) for id_ in tournament_ids]
+    classifier = rules.universal_classifier()
+    tournaments = [domain.ClassifiedTournament.from_tournament(t, classifier) for t in raw_tournaments]
+    return domain.CompetitionScoreListing.from_tournaments(tournaments)

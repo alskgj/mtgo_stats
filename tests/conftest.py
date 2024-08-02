@@ -1,8 +1,15 @@
+import json
+import pathlib
 from datetime import datetime
 
 import pytest
+
+import adapters
 import domain
 import domain.rules
+from adapters.repository import AbstractRepository
+from tests import fakes
+
 
 @pytest.fixture
 def rakdos_vampires() -> domain.Deck:
@@ -75,7 +82,8 @@ def phoenix_tournament(izzet_phoenix) -> domain.Tournament:
             domain.TournamentParticipant(name='p1', rank=2, wins=0, losses=3, deck=izzet_phoenix),
         ],
         start_time=datetime.fromisoformat('2024-03-30 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703',
+        player_count=2
     )
 
 
@@ -91,7 +99,8 @@ def small_tournament(izzet_phoenix, rakdos_vampires) -> domain.Tournament:
             domain.TournamentParticipant(name='p2', rank=3, wins=0, losses=3, deck=rakdos_vampires),
         ],
         start_time=datetime.fromisoformat('2024-03-29 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703',
+        player_count=3
     )
 
 
@@ -107,7 +116,8 @@ def old_small_tournament(izzet_phoenix, rakdos_vampires) -> domain.Tournament:
             domain.TournamentParticipant(name='p2', rank=3, wins=0, losses=3, deck=rakdos_vampires),
         ],
         start_time=datetime.fromisoformat('1700-03-29 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703',
+        player_count=3
     )
 
 
@@ -125,7 +135,8 @@ def medium_tournament(izzet_phoenix, rakdos_vampires, amalia_combo) -> domain.To
             domain.TournamentParticipant(name='p5', rank=5, wins=0, losses=3, deck=rakdos_vampires),
         ],
         start_time=datetime.fromisoformat('2023-03-30 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-64-2024-03-3012623703',
+        player_count=5
     )
 
 
@@ -137,7 +148,8 @@ def izzet_phoenix_result(izzet_phoenix: domain.Deck) -> domain.Result:
         wins=3,
         losses=0,
         date=datetime.fromisoformat('2023-03-30 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Dreddybajs'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Dreddybajs',
+        hero_cards=['Arclight Phoenix']
     )
 
 
@@ -149,7 +161,8 @@ def rakdos_vampires_result(rakdos_vampires: domain.Deck) -> domain.Result:
         wins=1,
         losses=1,
         date=datetime.fromisoformat('2023-03-30 10:00:00'),
-        link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Hexapuss'
+        link='https://www.mtgo.com/decklist/pioneer-challenge-32-2024-04-2612633733#deck_Hexapuss',
+        hero_cards=['Vein Ripper']
     )
 
 
@@ -159,3 +172,18 @@ def classifier() -> domain.Classifier:
         domain.rules.SimpleRule('Izzet Phoenix', ['Arclight Phoenix']),
         domain.rules.SimpleRule('Rakdos Vampires', ['Vein Ripper']),
     ])
+
+
+@pytest.fixture
+def challenge_64() -> domain.Tournament:
+    with open(pathlib.Path() / 'data/response_tournament_challenge_64.json', 'r') as fo:
+        tournament = domain.Tournament.from_json(json.load(fo))
+    return tournament
+
+
+@pytest.fixture
+def repo(medium_tournament) -> AbstractRepository:
+    fake = fakes.FakeRepository()
+    fake.add(medium_tournament, 'http://medium_tournament')
+
+    return fake

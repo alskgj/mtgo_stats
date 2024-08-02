@@ -2,6 +2,7 @@ pydantic
 requests
 beautifulsoup4
 pytest
+pytest-asyncio
 pymongo
 typer
 fastapi

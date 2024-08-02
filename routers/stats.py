@@ -1,15 +1,26 @@
-from typing import List
-
 import fastapi
 
 import domain
 from adapters.repository import MongoRepository
+from domain.rules import universal_classifier
 from service_layer import stats
+from service_layer.dependencies import RepoDep, MtgoDep
 from service_layer.services import get_mongo_db
 
 router = fastapi.APIRouter(prefix="/stats", tags=["items"])
 
 
-@router.get('/')
-def get_stats_overview() -> List[domain.DeckStat]:
-    return stats.get_stats(MongoRepository(get_mongo_db()))
+@router.get('/decks')
+def get_stats_overview(
+        repo: RepoDep,
+        max_days: int = 21,
+) -> list[domain.DeckStat]:
+    return stats.get_stats(repo, max_days=max_days)
+
+
+@router.get('/competition_scores')
+def get_competition_scores(
+        repo: RepoDep,
+        max_days: int = 21,
+) -> domain.CompetitionScoreListing:
+    return stats.calculate_competition_score(repo, max_days)

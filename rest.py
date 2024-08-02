@@ -1,39 +1,43 @@
 import asyncio
 import logging
-import os
+import traceback
 from contextlib import asynccontextmanager
 
 import fastapi
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
+import adapters
+from adapters import MtgoClient
 from adapters.repository import MongoRepository
-from cli import fetch
-from routers import stats
+import routers.stats
+from service_layer import services
 from service_layer.services import get_mongo_db
-from service_layer.stats import get_stats, create_html_table
+from service_layer.stats import get_stats, create_html_table, wrap_html_as_page
 
 
 def setup_logging():
-    logger = logging.getLogger(__name__)
+    logger_ = logging.getLogger(__name__)
 
     logging.getLogger('pymongo').setLevel(logging.WARNING)
     logging.basicConfig(level=logging.INFO)
-
-    logger.info('wow')
-    return logger
+    return logger_
 
 
 async def generate_html_out():
-    repo = MongoRepository(get_mongo_db())
+
+    # todo - fetching new tournaments should not be part of generating html
     # fetch new tournaments
-    fetch(months=2)
+    repo = MongoRepository(get_mongo_db())
+    api = adapters.MtgoAPI(MtgoClient())
+    await services.cache_tournaments(api, repo, months=2)
 
     # generate html
     s = get_stats(repo, max_days=21)[:20]
     table = create_html_table(s, colorize=True)
     with open('out.html', 'w') as f:
-        f.write(table)
+        f.write(wrap_html_as_page(table))
 
 
 async def periodically_create_html():
@@ -43,13 +47,12 @@ async def periodically_create_html():
         try:
             await generate_html_out()
         except Exception as e:
-            logger.error(f'Error while generating static page: {e}')
+            logger.error(f'Error while generating static page: {e}\n{traceback.format_exc()}')
         await asyncio.sleep(300)
 
 
 @asynccontextmanager
-async def lifespan(app_: fastapi.FastAPI):
-    # Load the ML model
+async def lifespan(_app: fastapi.FastAPI):
     task = asyncio.create_task(periodically_create_html())
     logger.info('Created task to periodically generate static page.')
     yield
@@ -57,12 +60,21 @@ async def lifespan(app_: fastapi.FastAPI):
     task.cancel()
 
 app = fastapi.FastAPI(lifespan=lifespan)
-app.include_router(stats.router)
+app.include_router(routers.stats.router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
 async def root():
-    return FileResponse('out.html')
+    res = FileResponse('out.html', headers={'Cache-Control': 'max-age=300'})
+    return res
 
 
 def main():
