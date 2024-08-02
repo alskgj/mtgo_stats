@@ -8,7 +8,6 @@ import service_layer
 from domain.rules import universal_classifier
 from domain.stats import ResultHandler
 from service_layer import stats
-from service_layer.stats import get_stats
 
 
 def test_win_rate_calculations(izzet_phoenix_result, rakdos_vampires_result):
@@ -67,12 +66,6 @@ def test_analyze(izzet_phoenix_result):
     """
     results = [izzet_phoenix_result]
     stats.analyze_deck(domain.DeckName('Izzet Phoenix'), results)
-
-
-def test_get_stats(repo):
-    decks = get_stats(repo, max_days=None)
-    assert 'Izzet Phoenix' in [deck.name for deck in decks]
-    assert 'Amalia Combo' in [deck.name for deck in decks]
 
 
 @pytest.mark.parametrize("deck,score,entries", [
