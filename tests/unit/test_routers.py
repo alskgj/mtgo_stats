@@ -14,7 +14,7 @@ def client(repo):
 
 
 def test_stats(client: httpx.Client):
-    response = client.get('/stats/decks', params={'max_days': 10000})
+    response = client.get('/stats/competition_scores', params={'max_days': 10000})
     print(response)
     assert response.status_code == 200
-    assert 'Izzet Phoenix' in [deck['name'] for deck in response.json()]
+    assert 'Izzet Phoenix' in response.json()['result']

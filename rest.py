@@ -14,7 +14,7 @@ from adapters.repository import MongoRepository
 import routers.stats
 from service_layer import services
 from service_layer.services import get_mongo_db
-from service_layer.stats import get_stats, create_html_table, wrap_html_as_page
+from service_layer.stats import create_html_table, wrap_html_as_page
 
 
 def setup_logging():
@@ -25,19 +25,10 @@ def setup_logging():
     return logger_
 
 
-async def generate_html_out():
-
-    # todo - fetching new tournaments should not be part of generating html
-    # fetch new tournaments
+async def cache_tournaments():
     repo = MongoRepository(get_mongo_db())
     api = adapters.MtgoAPI(MtgoClient())
     await services.cache_tournaments(api, repo, months=2)
-
-    # generate html
-    s = get_stats(repo, max_days=21)[:20]
-    table = create_html_table(s, colorize=True)
-    with open('out.html', 'w') as f:
-        f.write(wrap_html_as_page(table))
 
 
 async def periodically_create_html():
@@ -45,7 +36,7 @@ async def periodically_create_html():
     while True:
         logger.info('Generating new static page...')
         try:
-            await generate_html_out()
+            await cache_tournaments()
         except Exception as e:
             logger.error(f'Error while generating static page: {e}\n{traceback.format_exc()}')
         await asyncio.sleep(300)

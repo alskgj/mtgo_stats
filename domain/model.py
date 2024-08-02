@@ -384,12 +384,13 @@ class CompetitionScoreListing(pydantic.BaseModel):
         return result
 
     def __str__(self):
-        results = [(name, self.result[name].score, self.result[name].number_of_entries/self.matches_seen)
+        results = [(name, self.result[name].score, self.result[name].number_of_entries/self.matches_seen,
+                    self.result[name].number_of_entries)
                    for name in self.result]
         results.sort(key=lambda x: x[2], reverse=True)
 
-        answer = f"{'Deck':<20} {'score':<4} {'meta share'}\n"
+        answer = f"{'Deck':<20} {'score':<6} {'meta share'} {'#results'}\n"
         answer += "="*len(answer) + "\n"
         for result in results:
-            answer += f'{result[0]:<20} {result[1]:.2f} {result[2]*100:.2f}\n'
+            answer += f'{result[0]:<20} {result[1]:<6.2f} {result[2]*100:<10.2f} {result[3]}\n'
         return answer

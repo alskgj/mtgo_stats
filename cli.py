@@ -35,7 +35,7 @@ from domain import rules
 from domain.model import DeckName
 from domain.stats import ResultHandler, extract_results
 from service_layer.services import cache_tournaments, get_mongo_db, find_unclassified_decks
-from service_layer.stats import get_stats, create_html_table, analyze_deck, display_deck_analysis
+from service_layer.stats import create_html_table, analyze_deck, display_deck_analysis
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
@@ -54,60 +54,6 @@ def unclassified(max_days: int = 7):
     tournaments = list(repo.get_tournament_ids(max_days))
     all_tournaments = [repo.get(t) for t in tournaments]
     find_unclassified_decks(all_tournaments, rules.universal_classifier())
-
-
-@app.command()
-def stats(
-        deck: Annotated[str, typer.Option(help="Stats for a specific deck, e.g. 'Izzet Phoenix'")] = None,
-        card: Annotated[List[str], typer.Option(help="Implies --deck, differentiate win rate by this card")] = None,
-        max_days: int = 14,
-        max_results: int = 15,
-        fmt: str = 'text',
-        colorize: bool = True
-):
-
-    deck = DeckName(deck)
-    if card and deck is None:
-        print("Got --card {card}, but no deck specified!")
-        return
-    if card is None:
-        card = []
-    repo = MongoRepository(get_mongo_db())
-
-
-    if fmt == 'html':
-        s = get_stats(repo, deck, cards=card, max_days=max_days)[:max_results+5]
-        total_pr = sum([deckstat.play_rate for deckstat in s])
-        print(f'results account for {total_pr}% of the field')
-
-        tiers = []
-        for deckstat in s:
-            if deckstat.play_rate < 3:
-                continue
-            tiers.append((deckstat.name, deckstat.play_rate*max(1.0, deckstat.win_rate.mean-50)))
-        tiers.sort(key= lambda x: x[1], reverse=True)
-        for t in tiers:
-            print(t)
-
-
-        table = create_html_table(s, colorize)
-        with open('out.html', 'w') as f:
-            f.write(table)
-        webbrowser.open('file://'+os.path.realpath('out.html'))
-        return
-
-    tournaments = list(repo.get_tournament_ids(max_days))
-    all_tournaments = [repo.get(t) for t in tournaments]
-    results = extract_results(all_tournaments, rules.universal_classifier())
-    rh = ResultHandler(results)
-
-    # filter decks   -> fewer decks
-    if deck:
-        rh.split_deck_by_cards(deck, card)
-
-    # display stats
-    print(f'Displaying Stats for the last {max_results} days')
-    rh.show_stats(max_results=max_results)
 
 
 @app.command()
