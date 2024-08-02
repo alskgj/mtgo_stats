@@ -202,3 +202,11 @@ def display_deck_analysis(analysis: domain.DeckAnalysis):
     for choice in choices:
         if choice.match_percentage >= 10:
             print(choice)
+
+
+def calculate_competition_score(repo: AbstractRepository, max_days=21) -> domain.CompetitionScoreListing:
+    tournament_ids = repo.get_tournament_ids(max_days)
+    raw_tournaments = [repo.get(id_) for id_ in tournament_ids]
+    classifier = rules.universal_classifier()
+    tournaments = [domain.ClassifiedTournament.from_tournament(t, classifier) for t in raw_tournaments]
+    return domain.CompetitionScoreListing.from_tournaments(tournaments)

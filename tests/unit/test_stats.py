@@ -1,9 +1,11 @@
 import typing
 
 import pydantic
+import pytest
 
 import domain
 import service_layer
+from domain.rules import universal_classifier
 from domain.stats import ResultHandler
 from service_layer import stats
 from service_layer.stats import get_stats
@@ -71,3 +73,30 @@ def test_get_stats(repo):
     decks = get_stats(repo, max_days=None)
     assert 'Izzet Phoenix' in [deck.name for deck in decks]
     assert 'Amalia Combo' in [deck.name for deck in decks]
+
+
+@pytest.mark.parametrize("deck,score,entries", [
+    ("Rakdos Vampires", 0.5, 2),
+    ("Amalia Combo", 0.25, 1),
+    ("Izzet Phoenix", 0.625, 2)
+])
+def test_calculate_competition_score(repo, deck, score, entries):
+    """
+    Make sure competition score is calculated correctly
+    The tournament has 5 participants, Vamps got first and last place -> score of 0.5
+    Amalia got place 4 --> score == 0.25 (scores from first to last place are: 1, 0.75, 0.5, 0.25, 0)
+    Izzet phoenix got two results as rank 2 and 3 --> score = (0.75+0.5)/2 == 0.625
+    """
+    scores = stats.calculate_competition_score(repo, max_days=None)
+    assert scores.result[domain.DeckName(deck)] == domain.CompetitionScore(score=score, number_of_entries=entries)
+
+
+def test_scores(challenge_64):
+    classifier = universal_classifier()
+    # todo enhance test classifier with decks from this tournament and convert ct to fixture
+    tournament = domain.ClassifiedTournament.from_tournament(challenge_64, classifier)
+    score_listing = domain.CompetitionScoreListing.from_tournaments([tournament])
+
+    assert challenge_64.player_count == 74
+    assert score_listing.matches_seen == 32
+    assert round(score_listing.result[domain.DeckName('Amalia Combo')].score, 2) == 0.58

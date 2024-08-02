@@ -100,20 +100,6 @@ class IzzetControl(AbstractClassificationRule):
         )
 
 
-
-
-
-class MemeDeck(AbstractClassificationRule):
-    @property
-    def deck_name(self) -> DeckName:
-        return DeckName('Meme')
-
-    def satisfied_by(self, deck: Deck):
-        return (
-            sum([card.quantity for card in deck.main if card.type == CardType.land]) == 60
-        )
-
-
 class SimpleRule(AbstractClassificationRule):
     def heroes(self):
         return self.cards

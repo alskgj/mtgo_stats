@@ -1,7 +1,9 @@
 import typing
+from collections import defaultdict
 from datetime import datetime
 from enum import Enum
 
+import pydantic
 from pydantic import BaseModel
 from typing import List, NewType, Optional
 
@@ -121,6 +123,21 @@ class TournamentParticipant(BaseModel):
     deck: Deck
 
 
+class ClassifiedTournamentParticipant(BaseModel):
+    name: str
+    rank: int
+    wins: int
+    losses: int
+    deck: Deck
+    deck_name: DeckName
+
+    @classmethod
+    def from_player(cls, player: TournamentParticipant, classifier: 'Classifier') -> 'ClassifiedTournamentParticipant':
+        data = player.dict()
+        data['deck_name'] = classifier.classify(player.deck)
+        return cls(**data)
+
+
 class WinRate(BaseModel):
     mean: float
     lower_bound: float
@@ -137,6 +154,7 @@ class DeckStat(BaseModel):
 
 
 class Tournament(BaseModel):
+    """ A tournament containing only data from mtgo.com/decklist """
     id: int
     description: str
     format: str
@@ -144,6 +162,41 @@ class Tournament(BaseModel):
     start_time: datetime
     link: str
     player_count: int
+
+    @classmethod
+    def from_json(cls, data: dict) -> 'Tournament':
+        date = data['starttime']
+        if ' ' in date:
+            date = date.split(' ')[0]
+
+        return cls(
+            id=data['event_id'],
+            description=data['description'],
+            start_time=datetime.fromisoformat(date),
+            format='pioneer' if data['format'] == 'CPIONEER' else data['format'],
+            players=parse_tournament_participants(data),
+            link=f'https://www.mtgo.com/decklist/{data["site_name"]}',
+            player_count=data['player_count']['players']
+        )
+
+
+class ClassifiedTournament(BaseModel):
+    """ A tournament containing data from mtgo.com/decklist and interpretation (guessed deck name) """
+    id: int
+    description: str
+    format: str
+    players: List[ClassifiedTournamentParticipant]  # this is capped to top 32
+    start_time: datetime
+    link: str
+    player_count: int
+
+    @classmethod
+    def from_tournament(cls, tournament: Tournament, classifier: 'Classifier') -> 'ClassifiedTournament':
+        data = tournament.dict()
+        data['players'] = [
+            ClassifiedTournamentParticipant.from_player(player, classifier) for player in tournament.players
+        ]
+        return cls(**data)
 
 
 class AbstractClassificationRule(ABC):
@@ -202,3 +255,141 @@ class DeckAnalysis(BaseModel):
             self.cards[key].total_wins += result.wins
             self.cards[key].total_losses += result.losses
             self.cards[key].example_link = result.link
+
+
+def parse_tournament_participants(data: dict) -> List[TournamentParticipant]:
+    """
+    need
+    name, rank, wins, losses, deck
+    """
+    intermediate = defaultdict(dict)
+
+    # collect necessary data
+    for entry in data['winloss']:
+        intermediate[entry['loginid']]['wins'] = entry['wins']
+        intermediate[entry['loginid']]['losses'] = entry['losses']
+    for entry in data['standings']:
+        intermediate[entry['loginid']]['rank'] = entry['rank']
+    for entry in data['decklists']:
+        intermediate[entry['loginid']]['name'] = entry['player']
+        main_deck = merge_cards([parse_card(card_data) for card_data in entry['main_deck']])
+        side_deck = merge_cards([parse_card(card_data) for card_data in entry['sideboard_deck']])
+        intermediate[entry['loginid']]['deck'] = Deck(main=main_deck, side=side_deck)
+
+    # build the tournament participant
+    result = []
+    for loginid, entry in intermediate.items():
+        try:
+            result.append(TournamentParticipant(
+                name=entry['name'],
+                rank=entry['rank'],
+                wins=entry['wins'],
+                losses=entry['losses'],
+                deck=entry['deck']
+            ))
+        except KeyError:
+            continue
+    return result
+
+
+def parse_card(data: dict) -> Card:
+    attributes = data['card_attributes']
+    card_types = {
+        'iscrea': CardType.creature,
+        'sorcry': CardType.sorcery,
+        'instnt': CardType.instant,
+        'land': CardType.land,
+        'enchmt': CardType.enchantment,
+        'plnwkr': CardType.planeswalker,
+        'artfct': CardType.artifact,
+        'other': CardType.unknown
+
+    }
+    colors = {
+        'COLOR_BLACK': Color.black,
+        'COLOR_WHITE': Color.white,
+        'COLOR_BLUE': Color.blue,
+        'COLOR_RED': Color.red,
+        'COLOR_GREEN': Color.green,
+        'COLOR_COLORLESS': Color.colorless,
+        'unknown': Color.unknown
+    }
+
+    if 'card_type' not in attributes:
+        attributes['card_type'] = 'other'  # some dual sided new cards?
+    if 'cost' not in attributes:
+        attributes['cost'] = -1  # dual cards like Claim/Fame
+    if 'colors' not in attributes:
+        attributes['colors'] = ['unknown']  # Claim/Fame
+
+    return Card(
+        name=attributes['card_name'],
+        cost=attributes['cost'],
+        colors=[colors[color] for color in attributes['colors']],
+        type=card_types[attributes['card_type'].lower().strip()],
+        quantity=data['qty']
+    )
+
+
+def merge_cards(cards: List[Card]) -> List[Card]:
+    """Removes duplicate cards and merges them"""
+    by_name = dict()
+    for card in cards:
+        if card.name not in by_name:
+            by_name[card.name] = card
+        else:
+            by_name[card.name].quantity += card.quantity
+
+    return [card for _, card in by_name.items()]
+
+
+class CompetitionScore(pydantic.BaseModel):
+    """
+    Score is a float between 0 and 1, where 1 means this deck always got first place
+    and 0 means this deck always got last place
+    """
+    score: float
+    number_of_entries: int
+
+
+class CompetitionScoreListing(pydantic.BaseModel):
+    result: dict[DeckName, CompetitionScore]
+    matches_seen: int
+
+    @classmethod
+    def from_tournaments(cls, tournaments:  List[ClassifiedTournament]) -> 'CompetitionScoreListing':
+        temporary_results: dict[DeckName, list[(float, int)]] = {}
+        for tournament in tournaments:
+            n = len(tournament.players)  # mtgo gives at most 32 results
+            for player in tournament.players:
+                score = (n - player.rank) / (n - 1)
+                weight = tournament.player_count  # weigh larger tournamnets more
+                if player.deck_name not in temporary_results:
+                    temporary_results[player.deck_name] = []
+                temporary_results[player.deck_name].append((score, weight))
+
+        result = cls(result={}, matches_seen=0)
+        for deck in temporary_results:
+            total_score = 0
+            total_weight = 0
+            for score, weight in temporary_results[deck]:
+                total_score += score * weight
+                total_weight += weight
+            result.result[deck] = CompetitionScore(
+                score=total_score / total_weight,
+                number_of_entries=len(temporary_results[deck])
+            )
+            result.matches_seen += len(temporary_results[deck])
+
+        return result
+
+    def __str__(self):
+        results = [(name, self.result[name].score, self.result[name].number_of_entries/self.matches_seen)
+                   for name in self.result]
+        results.sort(key=lambda x: x[2], reverse=True)
+
+        answer = f"{'Deck':<20} {'score':<4} {'meta share'}\n"
+        answer += "="*len(answer) + "\n"
+        for result in results:
+            answer += f'{result[0]:<20} {result[1]:.2f} {result[2]*100:.2f}\n'
+        return answer

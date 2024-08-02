@@ -5,18 +5,16 @@ from contextlib import asynccontextmanager
 
 import fastapi
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
 import adapters
-import domain
 from adapters import MtgoClient
 from adapters.repository import MongoRepository
-from routers import stats
+import routers.stats
 from service_layer import services
-from service_layer.dependencies import RepoDep, MtgoDep
 from service_layer.services import get_mongo_db
 from service_layer.stats import get_stats, create_html_table, wrap_html_as_page
-from fastapi.middleware.cors import CORSMiddleware
 
 
 def setup_logging():
@@ -28,6 +26,8 @@ def setup_logging():
 
 
 async def generate_html_out():
+
+    # todo - fetching new tournaments should not be part of generating html
     # fetch new tournaments
     repo = MongoRepository(get_mongo_db())
     api = adapters.MtgoAPI(MtgoClient())
@@ -60,7 +60,7 @@ async def lifespan(_app: fastapi.FastAPI):
     task.cancel()
 
 app = fastapi.FastAPI(lifespan=lifespan)
-app.include_router(stats.router)
+app.include_router(routers.stats.router)
 
 app.add_middleware(
     CORSMiddleware,

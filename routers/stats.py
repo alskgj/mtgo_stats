@@ -16,3 +16,11 @@ def get_stats_overview(
         max_days: int = 21,
 ) -> list[domain.DeckStat]:
     return stats.get_stats(repo, max_days=max_days)
+
+
+@router.get('/competition_scores')
+def get_competition_scores(
+        repo: RepoDep,
+        max_days: int = 21,
+) -> domain.CompetitionScoreListing:
+    return stats.calculate_competition_score(repo, max_days)

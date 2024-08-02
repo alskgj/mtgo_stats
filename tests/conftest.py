@@ -1,6 +1,10 @@
+import json
+import pathlib
 from datetime import datetime
 
 import pytest
+
+import adapters
 import domain
 import domain.rules
 from adapters.repository import AbstractRepository
@@ -168,6 +172,13 @@ def classifier() -> domain.Classifier:
         domain.rules.SimpleRule('Izzet Phoenix', ['Arclight Phoenix']),
         domain.rules.SimpleRule('Rakdos Vampires', ['Vein Ripper']),
     ])
+
+
+@pytest.fixture
+def challenge_64() -> domain.Tournament:
+    with open(pathlib.Path() / 'data/response_tournament_challenge_64.json', 'r') as fo:
+        tournament = domain.Tournament.from_json(json.load(fo))
+    return tournament
 
 
 @pytest.fixture

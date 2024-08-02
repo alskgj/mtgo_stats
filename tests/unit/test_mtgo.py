@@ -3,6 +3,7 @@ import json
 import pytest
 
 import adapters
+import domain
 from adapters import MtgoAPI
 from adapters.mtgo.client import AbstractMtgoClient
 import pathlib
@@ -41,12 +42,12 @@ def mtgo_api() -> MtgoAPI:
 
 
 def test_parse_players(tournament_data):
-    parsed = adapters.mtgo.api.parse_players(tournament_data)
+    parsed = domain.parse_tournament_participants(tournament_data)
     assert True
 
 
 def test_parse_cards(card_data):
-    parsed = adapters.mtgo.api.parse_card(card_data)
+    parsed = domain.parse_card(card_data)
     assert True
 
 
